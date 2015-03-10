@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">OneAll Sample</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="facebook_app_id">497832153684732</string>
+    <string name="main_activity_avatar_description">User avatar</string>
+</resources>
