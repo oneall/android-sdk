@@ -82,7 +82,11 @@ public class ProviderManager {
     }
 
     public Collection<Provider> getProviders() {
-        return new ArrayList<>(providers);
+        if (providers != null) {
+            return new ArrayList<>(providers);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public Provider findByKey(String key) {

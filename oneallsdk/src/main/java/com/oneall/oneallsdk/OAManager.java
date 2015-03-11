@@ -22,11 +22,12 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 /**
- * Created by urk on 8/3/15.
+ * Main manager providing interface to all OneAll operations and the whole API
  */
 public class OAManager {
 
     // region Constants
+
     private static final Integer INTENT_REQUEST_CODE_SELECT_ACTIVITY = 0;
     private static final Integer INTENT_REQUEST_CODE_LOGIN = 1;
 
@@ -120,7 +121,9 @@ public class OAManager {
             String facebookAppId,
             String twitterConsumerKey,
             String twitterSecret) {
+
         setup(subdomain);
+
         throw new UnsupportedOperationException("Unimplemented");
     }
 
