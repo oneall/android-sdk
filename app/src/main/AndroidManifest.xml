@@ -30,6 +30,9 @@
             android:name="com.oneall.oneallsdk.ProviderSelectActivity"
             android:label="@string/title_activity_provider_select" />
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="07984e2bf66cb24b1d06fdd8c93284055c05bf90" />
     </application>
 
 

@@ -11,9 +11,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.oneall.oneallsdk.OAError;
 import com.oneall.oneallsdk.OAManager;
 import com.oneall.oneallsdk.rest.models.ResponseConnection;
+import io.fabric.sdk.android.Fabric;
 
 public class OAMainActivity extends ActionBarActivity {
 
@@ -36,6 +38,7 @@ public class OAMainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_oamain);
 
         OAManager.getInstance(this).setup("urktest");
