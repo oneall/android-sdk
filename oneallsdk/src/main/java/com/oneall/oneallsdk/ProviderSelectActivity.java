@@ -75,15 +75,17 @@ public class ProviderSelectActivity
         FragmentTransaction fTrans = getSupportFragmentManager().beginTransaction();
 
         for (Provider p : ProviderManager.getInstance().getProviders()) {
-            TableRow tableRow = new TableRow(this);
-            tableRow.setTag(p.getKey());
-            tableRow.setId(p.getKey().hashCode());
-            table.addView(tableRow);
+            if (p.getConfiguration().getIsCompleted()) {
+                TableRow tableRow = new TableRow(this);
+                tableRow.setTag(p.getKey());
+                tableRow.setId(p.getKey().hashCode());
+                table.addView(tableRow);
 
 
             /* add provider fragment to table row */
-            ProviderFragment pf = ProviderFragment.newInstance(p.getName(), p.getKey());
-            fTrans.add(R.id.activity_provider_select_table_view /*tableRow.getId()*/, pf);
+                ProviderFragment pf = ProviderFragment.newInstance(p.getName(), p.getKey());
+                fTrans.add(R.id.activity_provider_select_table_view /*tableRow.getId()*/, pf);
+            }
         }
 
         fTrans.commit();
