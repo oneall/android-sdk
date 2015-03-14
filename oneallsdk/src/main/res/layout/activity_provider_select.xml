@@ -16,11 +16,15 @@
             android:id="@+id/button_cancel"
             android:text="@string/button_cancel"/>
 
-        <TableLayout
+        <ScrollView
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:clickable="true"
-            android:id="@+id/table_layout" />
+            android:layout_height="fill_parent">
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:id="@+id/activity_provider_select_table_view" />
+        </ScrollView>
     </LinearLayout>
 
 </RelativeLayout>

@@ -9,9 +9,12 @@ import android.widget.ImageView;
 import java.io.InputStream;
 
 /**
- * Created by urk on 10/3/15.
+ * Download image in background and put downloaded image into ImageView
  */
 public class ImageDownloader extends AsyncTask<String, Void, Bitmap> {
+
+    private final static String TAG = ImageDownloader.class.toString();
+
     ImageView bmImage;
 
     public ImageDownloader(ImageView bmImage) {
@@ -21,9 +24,13 @@ public class ImageDownloader extends AsyncTask<String, Void, Bitmap> {
     protected Bitmap doInBackground(String... urls) {
         String urldisplay = urls[0];
         Bitmap mIcon11 = null;
+
+        Log.i(TAG, String.format("Downloading image from %s", urldisplay));
+
         try {
             InputStream in = new java.net.URL(urldisplay).openStream();
             mIcon11 = BitmapFactory.decodeStream(in);
+            Log.i(TAG, String.format("Image downloaded from %s", urldisplay));
         } catch (Exception e) {
             Log.e("Error", e.getMessage());
         }

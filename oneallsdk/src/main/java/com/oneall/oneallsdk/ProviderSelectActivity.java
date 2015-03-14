@@ -1,6 +1,7 @@
 package com.oneall.oneallsdk;
 
 import android.content.Intent;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -8,14 +9,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TextView;
 
 import com.oneall.oneallsdk.rest.models.Provider;
 
 
-public class ProviderSelectActivity extends ActionBarActivity {
+public class ProviderSelectActivity
+        extends ActionBarActivity
+        implements ProviderFragment.OnFragmentInteractionListener {
 
     // region Constants
+
+    private static final String TAG = ProviderSelectActivity.class.toString();
 
     public static final String INTENT_EXTRA_PROVIDER = "provider";
 
@@ -66,24 +70,23 @@ public class ProviderSelectActivity extends ActionBarActivity {
     // region Activity setup
 
     private void setupTable() {
-        TableLayout table = (TableLayout) findViewById(R.id.table_layout);
+        TableLayout table = (TableLayout) findViewById(R.id.activity_provider_select_table_view);
+
+        FragmentTransaction fTrans = getSupportFragmentManager().beginTransaction();
 
         for (Provider p : ProviderManager.getInstance().getProviders()) {
             TableRow tableRow = new TableRow(this);
             tableRow.setTag(p.getKey());
-
-            tableRow.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    handlerProviderSelected((String) v.getTag());
-                }
-            });
-
-            TextView textView = new TextView(this);
-            textView.setText(p.getName());
-            tableRow.addView(textView);
+            tableRow.setId(p.getKey().hashCode());
             table.addView(tableRow);
+
+
+            /* add provider fragment to table row */
+            ProviderFragment pf = ProviderFragment.newInstance(p.getName(), p.getKey());
+            fTrans.add(R.id.activity_provider_select_table_view /*tableRow.getId()*/, pf);
         }
+
+        fTrans.commit();
     }
 
     private void setupButtons() {
@@ -104,11 +107,19 @@ public class ProviderSelectActivity extends ActionBarActivity {
         finish();
     }
 
-    private void handlerProviderSelected(String pkey) {
+    // endregion
+
+    // region ProviderFragment.OnFragmentInteractionListener
+
+    @Override
+    public void onFragmentInteraction(String providerKey) {
+        OALog.info("Selected provider: " + providerKey);
+
         Intent response = new Intent();
-        response.putExtra(INTENT_EXTRA_PROVIDER, pkey);
+        response.putExtra(INTENT_EXTRA_PROVIDER, providerKey);
         setResult(RESULT_OK, response);
         finish();
+
     }
 
     // endregion
