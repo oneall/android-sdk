@@ -1,8 +1,10 @@
 package com.oneall.oneallsdk;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -115,13 +117,17 @@ public class ProviderFragment extends Fragment {
 
         rv.setOnTouchListener(new View.OnTouchListener() {
             private Drawable mDefaultBackground;
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
                     mDefaultBackground = v.getBackground();
                     v.setBackgroundColor(Color.LTGRAY);
-                } else {
+                } else if (Build.VERSION.SDK_INT < 15) {
+                    //noinspection deprecation
                     v.setBackgroundDrawable(mDefaultBackground);
+                } else {
+                    v.setBackground(mDefaultBackground);
                 }
                 return false;
             }
