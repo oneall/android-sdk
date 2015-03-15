@@ -4,8 +4,13 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.oneall.oneallsdk.Settings;
+import com.oneall.oneallsdk.rest.models.PostMessageRequest;
 import com.oneall.oneallsdk.rest.service.ConnectionService;
+import com.oneall.oneallsdk.rest.service.MessagePostService;
 import com.oneall.oneallsdk.rest.service.ProviderService;
+
+import java.net.URL;
+import java.util.Collection;
 
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
@@ -65,8 +70,16 @@ public class ServiceManagerProvider {
         return restAdapter.create(ConnectionService.class);
     }
 
+    public MessagePostService getPostService() {
+        return restAdapter.create(MessagePostService.class);
+    }
+
     public static String buildAuthHeader(String nonce) {
         return String.format("OneAllNonce %s", nonce);
+    }
+
+    public static String buildPublishAuthHeader(String token) {
+        return String.format("OneAllPublishToken %s", token);
     }
 
     // endregion

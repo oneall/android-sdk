@@ -7,12 +7,16 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
 
+import com.oneall.oneallsdk.rest.ServiceCallback;
 import com.oneall.oneallsdk.rest.ServiceManagerProvider;
+import com.oneall.oneallsdk.rest.models.PostMessageRequest;
+import com.oneall.oneallsdk.rest.models.PostMessageResponse;
 import com.oneall.oneallsdk.rest.models.Provider;
 import com.oneall.oneallsdk.rest.models.ResponseConnection;
+import com.oneall.oneallsdk.rest.models.User;
 import com.oneall.oneallsdk.rest.service.ConnectionService;
+import com.oneall.oneallsdk.rest.service.MessagePostService;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -36,12 +40,12 @@ public class OAManager {
     // region Helper classes and interfaces
 
     public interface LoginHandler {
-        void loginSuccess(ResponseConnection.Data.User user, Boolean newUser);
+        void loginSuccess(User user, Boolean newUser);
         void loginFailure(OAError error);
     }
 
     public interface OAManagerPostHandler {
-        void postComplete(Boolean success, Collection<String> succeededProviders, OAError error);
+        void postComplete(Boolean success, PostMessageResponse response);
     }
 
     // endregion
@@ -112,8 +116,6 @@ public class OAManager {
         OALog.info(String.format("SDK init with subdomain %s", subdomain));
         Settings.getInstance().setSubdomain(subdomain);
         ProviderManager.getInstance().refreshProviders(rootActivity);
-
-//        throw new UnsupportedOperationException("Unimplemented");
     }
 
     public void setup(
@@ -152,21 +154,57 @@ public class OAManager {
         return true;
     }
 
-    public Boolean postMessageWithText(
+    public void postMessage(
             String text,
-            URL pictureUrl,
-            URL videoUrl,
-            URL linkUrl,
+            String pictureUrl,
+            String videoUrl,
+            String linkUrl,
             String linkName,
             String linkCaption,
             String linkDescription,
             Boolean enableTracking,
             String userToken,
             String publishToken,
-            Collection<String> providers,
-            OAManagerPostHandler handler) {
+            final Collection<String> providers,
+            final OAManagerPostHandler handler) {
 
-        throw new UnsupportedOperationException("Unimplemented");
+        MessagePostService service = ServiceManagerProvider.getInstance().getPostService();
+        PostMessageRequest request = new PostMessageRequest(
+                providers,
+                text,
+                pictureUrl,
+                videoUrl,
+                linkUrl,
+                linkName,
+                linkCaption,
+                linkDescription,
+                enableTracking);
+
+        OALog.info("Posting message to providers");
+
+        service.post(
+                userToken,
+                ServiceManagerProvider.buildPublishAuthHeader(publishToken),
+                request,
+                new ServiceCallback<PostMessageResponse>() {
+                    @Override
+                    public void success(PostMessageResponse postMessageResponse, Response response) {
+                        OALog.info(String.format("Message post succeeded: %s", response.toString()));
+                        if (handler != null) {
+                            handler.postComplete(true, postMessageResponse);
+                        }
+                    }
+
+                    @Override
+                    public void failure(ServiceError error) {
+                        OALog.warn(String.format(
+                                "Message post failed: %s", error.getRetrofitError().getMessage()));
+
+                        if (handler != null) {
+                            handler.postComplete(false, error.getResponse());
+                        }
+                    }
+                });
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

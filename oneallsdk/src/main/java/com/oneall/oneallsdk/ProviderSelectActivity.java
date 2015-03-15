@@ -9,8 +9,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 import com.oneall.oneallsdk.rest.models.Provider;
+
+import java.util.Collection;
 
 
 public class ProviderSelectActivity
@@ -74,8 +77,28 @@ public class ProviderSelectActivity
 
         FragmentTransaction fTrans = getSupportFragmentManager().beginTransaction();
 
-        for (Provider p : ProviderManager.getInstance().getProviders()) {
-            if (p.getConfiguration().getIsCompleted()) {
+        Collection<Provider> providers = ProviderManager.getInstance().getProviders();
+
+        if (providers != null && !providers.isEmpty()) {
+            setupFullTable(table, fTrans, providers);
+        } else {
+            setupEmptyTable(table, fTrans);
+        }
+
+        fTrans.commit();
+    }
+
+    private void setupEmptyTable(TableLayout table, FragmentTransaction fTrans) {
+        TableRow tableRow = new TableRow(this);
+        TextView tv = new TextView(this);
+        tv.setText(getResources().getString(R.string.providers_not_ready_try_again));
+        tableRow.addView(tv);
+        table.addView(tableRow);
+    }
+
+    private void setupFullTable(TableLayout table, FragmentTransaction fTrans, Collection<Provider> providers) {
+        for (Provider p : providers) {
+            if (p.getConfiguration() != null && p.getConfiguration().getIsCompleted()) {
                 TableRow tableRow = new TableRow(this);
                 tableRow.setTag(p.getKey());
                 tableRow.setId(p.getKey().hashCode());
@@ -87,8 +110,6 @@ public class ProviderSelectActivity
                 fTrans.add(R.id.activity_provider_select_table_view /*tableRow.getId()*/, pf);
             }
         }
-
-        fTrans.commit();
     }
 
     private void setupButtons() {

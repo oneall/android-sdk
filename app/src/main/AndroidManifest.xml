@@ -14,18 +14,20 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="oneall" android:host="path" />
+
+                <data
+                    android:host="path"
+                    android:scheme="oneall" />
             </intent-filter>
-
         </activity>
-
         <activity
             android:name="com.oneall.oneallsdk.ProviderSelectActivity"
             android:label="@string/title_activity_provider_select" />
@@ -33,7 +35,11 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="07984e2bf66cb24b1d06fdd8c93284055c05bf90" />
-    </application>
 
+        <activity
+            android:name=".PostActivity"
+            android:label="@string/title_activity_post" >
+        </activity>
+    </application>
 
 </manifest>

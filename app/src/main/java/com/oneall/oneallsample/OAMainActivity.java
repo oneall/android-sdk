@@ -7,26 +7,30 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
 import com.oneall.oneallsdk.OAError;
 import com.oneall.oneallsdk.OAManager;
-import com.oneall.oneallsdk.rest.models.ResponseConnection;
+import com.oneall.oneallsdk.rest.models.User;
+
 import io.fabric.sdk.android.Fabric;
 
 public class OAMainActivity extends ActionBarActivity {
 
+    private User user;
+
     private OAManager.LoginHandler loginHandler = new OAManager.LoginHandler() {
         @Override
-        public void loginSuccess(ResponseConnection.Data.User user, Boolean newUser) {
+        public void loginSuccess(User user, Boolean newUser) {
             Log.v(OAMainActivity.class.toString(), "successfully logged into OA");
             ((TextView) findViewById(R.id.main_activity_user_name)).setText(user.identity.name.formatted);
 
             new ImageDownloader(((ImageView) findViewById(R.id.main_activity_user_avatar)))
                     .execute(user.identity.photos.get(0).value);
+
+            OAMainActivity.this.user = user;
         }
 
         @Override
@@ -43,11 +47,17 @@ public class OAMainActivity extends ActionBarActivity {
 
         OAManager.getInstance(this).setup("urktest");
 
-        Button loginButton = (Button) findViewById(R.id.button_login);
-        loginButton.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button_login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 OAManager.getInstance().login(OAMainActivity.this, loginHandler);
+            }
+        });
+
+        findViewById(R.id.button_post).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                handlerButtonPost();
             }
         });
     }
@@ -83,5 +93,11 @@ public class OAMainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void handlerButtonPost() {
+        Intent intent = new Intent(this, PostActivity.class);
+        intent.putExtra(PostActivity.INTENT_EXTRA_USER, user);
+        startActivity(intent);
     }
 }

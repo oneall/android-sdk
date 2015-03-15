@@ -17,4 +17,5 @@
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="provider_fragment_provider_icon">Provider icon</string>
+    <string name="providers_not_ready_try_again">Providers are not ready. Try again in a few seconds.</string>
 </resources>
