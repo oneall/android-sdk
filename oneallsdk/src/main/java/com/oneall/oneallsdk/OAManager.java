@@ -9,6 +9,7 @@ import android.content.Intent;
 
 import com.oneall.oneallsdk.rest.ServiceCallback;
 import com.oneall.oneallsdk.rest.ServiceManagerProvider;
+import com.oneall.oneallsdk.rest.models.NativeLoginRequest;
 import com.oneall.oneallsdk.rest.models.PostMessageRequest;
 import com.oneall.oneallsdk.rest.models.PostMessageResponse;
 import com.oneall.oneallsdk.rest.models.Provider;
@@ -16,6 +17,7 @@ import com.oneall.oneallsdk.rest.models.ResponseConnection;
 import com.oneall.oneallsdk.rest.models.User;
 import com.oneall.oneallsdk.rest.service.ConnectionService;
 import com.oneall.oneallsdk.rest.service.MessagePostService;
+import com.oneall.oneallsdk.rest.service.UserService;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,6 +108,7 @@ public class OAManager {
         this();
         this.rootActivity = rootActivity;
         OALog.init(rootActivity);
+        FacebookWrapper.getInstance().init(rootActivity);
     }
 
     // endregion
@@ -114,6 +117,7 @@ public class OAManager {
 
     public void setup(String subdomain) {
         OALog.info(String.format("SDK init with subdomain %s", subdomain));
+
         Settings.getInstance().setSubdomain(subdomain);
         ProviderManager.getInstance().refreshProviders(rootActivity);
     }
@@ -140,7 +144,21 @@ public class OAManager {
 
         lastNonce = UUID.randomUUID().toString();
 
-        webLoginWithProvider();
+        if (provider.equals("facebook")) {
+            FacebookWrapper.getInstance().login(new FacebookWrapper.SessionStateListener() {
+                @Override
+                public void success(String accessToken) {
+                    facebookLoginSuccess(accessToken);
+                }
+
+                @Override
+                public void failure(OAError error) {
+                    facebookLoginFailure(error);
+                }
+            });
+        } else {
+            webLoginWithProvider();
+        }
 
         return true;
     }
@@ -206,26 +224,6 @@ public class OAManager {
                     }
                 });
     }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /* on cancelled login, nothing to do here */
-        if (resultCode == Activity.RESULT_CANCELED ||
-                resultCode == WebLoginActivity.RESULT_FAILED) {
-
-            if (loginHandler != null) {
-                loginHandler.loginFailure(new OAError(OAError.ErrorCode.OA_ERROR_CANCELLED, null));
-                loginHandler = null;
-            }
-        } else if (requestCode == INTENT_REQUEST_CODE_SELECT_ACTIVITY) {
-            loginOnResumeProvider = data.getExtras().getString(ProviderSelectActivity.INTENT_EXTRA_PROVIDER);
-            loginOnResume = true;
-        } else if (requestCode == INTENT_REQUEST_CODE_LOGIN) {
-            webLoginComplete(data);
-        } else {
-            OALog.info(String.format("Invalid request code: %d", requestCode));
-        }
-    }
-
 
     /**
      * it is impossible to work with GUI (specifically Fragments) from onActivityResult():
@@ -350,5 +348,85 @@ public class OAManager {
         return uriBuilder.build().toString();
     }
 
+    private void facebookLoginFailure(OAError error) {
+        if (loginHandler != null) {
+            loginHandler.loginFailure(error);
+        }
+    }
+
+    private void facebookLoginSuccess(String accessToken) {
+        UserService service = ServiceManagerProvider.getInstance().getUserService();
+
+        NativeLoginRequest request = new NativeLoginRequest("facebook", accessToken);
+
+        service.info(request, new Callback<ResponseConnection>() {
+            @Override
+            public void success(ResponseConnection connection, Response response) {
+                if (loginHandler != null) {
+                    loginHandler.loginSuccess(connection.data.user, false);
+                    loginHandler = null;
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                if (loginHandler != null) {
+                    loginHandler.loginFailure(new OAError(
+                            OAError.ErrorCode.OA_ERROR_CONNECTION_ERROR,
+                            rootActivity.getResources().getString(R.string.connection_failure)));
+                    loginHandler = null;
+                }
+            }
+        });
+    }
+
     // endregion
+
+    // region Activity lifecycle responders
+
+    // To ensure that the sessions are set up correctly, your fragment must override the fragment lifecycle methods: onCreate(), onResume(), onPause(), onDestroy(), onActivityResult() and onSaveInstanceState() and call the corresponding UiLifecycleHelper methods.
+
+    public void onCreate(Bundle savedInstanceState) {
+        FacebookWrapper.getInstance().onCreate(savedInstanceState);
+    }
+
+    public void onResume() {
+        FacebookWrapper.getInstance().onResume();
+    }
+
+    public void onPause() {
+        FacebookWrapper.getInstance().onPause();
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /* on cancelled login, nothing to do here */
+        if (resultCode == Activity.RESULT_CANCELED ||
+                resultCode == WebLoginActivity.RESULT_FAILED) {
+
+            if (loginHandler != null) {
+                loginHandler.loginFailure(new OAError(OAError.ErrorCode.OA_ERROR_CANCELLED, null));
+                loginHandler = null;
+            }
+        } else if (requestCode == INTENT_REQUEST_CODE_SELECT_ACTIVITY) {
+            loginOnResumeProvider = data.getExtras().getString(ProviderSelectActivity.INTENT_EXTRA_PROVIDER);
+            loginOnResume = true;
+        } else if (requestCode == INTENT_REQUEST_CODE_LOGIN) {
+            webLoginComplete(data);
+        } else {
+            FacebookWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
+            OALog.info(String.format("Invalid request code: %d", requestCode));
+        }
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        FacebookWrapper.getInstance().onSaveInstanceState(outState);
+
+    }
+
+    public void onDestroy() {
+        FacebookWrapper.getInstance().onDestroy();
+    }
+
+    // endregion
+
 }

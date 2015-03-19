@@ -8,9 +8,7 @@ import com.oneall.oneallsdk.rest.models.PostMessageRequest;
 import com.oneall.oneallsdk.rest.service.ConnectionService;
 import com.oneall.oneallsdk.rest.service.MessagePostService;
 import com.oneall.oneallsdk.rest.service.ProviderService;
-
-import java.net.URL;
-import java.util.Collection;
+import com.oneall.oneallsdk.rest.service.UserService;
 
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
@@ -72,6 +70,10 @@ public class ServiceManagerProvider {
 
     public MessagePostService getPostService() {
         return restAdapter.create(MessagePostService.class);
+    }
+
+    public UserService getUserService() {
+        return restAdapter.create(UserService.class);
     }
 
     public static String buildAuthHeader(String nonce) {

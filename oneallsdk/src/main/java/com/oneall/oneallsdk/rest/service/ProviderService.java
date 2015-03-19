@@ -6,7 +6,7 @@ import retrofit.Callback;
 import retrofit.http.GET;
 
 /**
- * Created by urk on 9/3/15.
+ * Service used to retrieve list of providers from OneAll API
  */
 public interface ProviderService {
 

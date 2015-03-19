@@ -40,12 +40,38 @@ public class OAMainActivity extends ActionBarActivity {
     };
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        OAManager.getInstance().onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        OAManager.getInstance().onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        OAManager.getInstance().onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        OAManager.getInstance().onSaveInstanceState(outState);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_oamain);
 
         OAManager.getInstance(this).setup("urktest");
+
+        OAManager.getInstance().onCreate(savedInstanceState);
 
         findViewById(R.id.button_login).setOnClickListener(new View.OnClickListener() {
             @Override

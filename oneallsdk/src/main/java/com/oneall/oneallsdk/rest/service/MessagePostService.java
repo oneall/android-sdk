@@ -4,7 +4,6 @@ import com.oneall.oneallsdk.rest.ServiceCallback;
 import com.oneall.oneallsdk.rest.models.PostMessageRequest;
 import com.oneall.oneallsdk.rest.models.PostMessageResponse;
 
-import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.Header;
 import retrofit.http.POST;

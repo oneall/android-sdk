@@ -1,6 +1,8 @@
 package com.oneall.oneallsample;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -82,8 +84,7 @@ public class PostActivity extends ActionBarActivity {
                 true,
                 user.userToken,
                 user.publishToken.key,
-//                getProvidersForUser(user),
-                new ArrayList<>(Arrays.asList(new String[]{"foursquare", "facebook"})),
+                getProvidersForUser(user),
                 new OAManager.OAManagerPostHandler() {
                     @Override
                     public void postComplete(Boolean success, PostMessageResponse response) {
@@ -103,15 +104,33 @@ public class PostActivity extends ActionBarActivity {
     private void postResponseComplete(Boolean success, PostMessageResponse response) {
         ArrayList<String> failures = new ArrayList<>();
         for (PostMessageResponse.Data.Message.Publication pub : response.data.message.publications) {
-            if (pub == null ||
-                    pub.status == null ||
+            if (pub.status == null ||
                     pub.status.flag == null ||
                     !pub.status.flag.equals("success")) {
                 failures.add(pub.provider);
             }
         }
+
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        };
+
         if (failures.size() > 0) {
-            Log.v(TAG, "Failed providers: " + failures);
+            new AlertDialog.Builder(this)
+                    .setTitle("Oops")
+                    .setMessage("Failed providers list: " + failures)
+                    .setPositiveButton("OK", listener)
+                    .show();
+
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Posted")
+                    .setMessage("Message has been posted")
+                    .setPositiveButton("OK", listener)
+                    .show();
         }
     }
 }
