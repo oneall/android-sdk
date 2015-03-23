@@ -15,9 +15,15 @@ import com.oneall.oneallsdk.OAError;
 import com.oneall.oneallsdk.OAManager;
 import com.oneall.oneallsdk.rest.models.User;
 
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
 import io.fabric.sdk.android.Fabric;
 
 public class OAMainActivity extends ActionBarActivity {
+
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "1nDCsyNMnu0l5hzUCasIBj8FU";
+    private static final String TWITTER_SECRET = "R3b5W2iddHnaCwStbyXhRUVHcWQblVuGAMsrWXQ4OygFFlQY2w";
 
     private User user;
 
@@ -66,7 +72,9 @@ public class OAMainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
+
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric.with(this, new Crashlytics(), new Twitter(authConfig));
         setContentView(R.layout.activity_oamain);
 
         OAManager.getInstance(this).setup("urktest");

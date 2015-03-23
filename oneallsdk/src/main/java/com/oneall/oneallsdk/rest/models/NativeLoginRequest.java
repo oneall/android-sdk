@@ -16,41 +16,43 @@ public class NativeLoginRequest {
                 public class Source {
                     public class AccessToken {
                         public String key;
+                        public String secret;
 
-                        public AccessToken(String accessToken) {
+                        public AccessToken(String accessToken, String secret) {
                             this.key = accessToken;
+                            this.secret = secret;
                         }
                     }
                     public String key;
                     public AccessToken accessToken;
 
-                    public Source(String provider, String accessToken) {
+                    public Source(String provider, String accessToken, String secret) {
                         this.key = provider;
-                        this.accessToken = new AccessToken(accessToken);
+                        this.accessToken = new AccessToken(accessToken, secret);
                     }
                 }
                 public Source source;
 
-                public Identity(String provider, String accessToken) {
-                    this.source = new Source(provider, accessToken);
+                public Identity(String provider, String accessToken, String secret) {
+                    this.source = new Source(provider, accessToken, secret);
                 }
             }
             public String action = "import_from_access_token";
             public Identity identity;
 
-            public User(String provider, String accessToken) {
-                this.identity = new Identity(provider, accessToken);
+            public User(String provider, String accessToken, String secret) {
+                this.identity = new Identity(provider, accessToken, secret);
             }
         }
         public User user;
 
-        public Request(String provider, String accessToken) {
-            this.user = new User(provider, accessToken);
+        public Request(String provider, String accessToken, String secret) {
+            this.user = new User(provider, accessToken, secret);
         }
     }
     public Request request;
 
-    public NativeLoginRequest(String provider, String accessToken) {
-        this.request = new Request(provider, accessToken);
+    public NativeLoginRequest(String provider, String accessToken, String secret) {
+        this.request = new Request(provider, accessToken, secret);
     }
 }

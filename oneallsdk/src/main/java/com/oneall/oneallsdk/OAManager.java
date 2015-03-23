@@ -1,6 +1,7 @@
 package com.oneall.oneallsdk;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -154,6 +155,18 @@ public class OAManager {
                 @Override
                 public void failure(OAError error) {
                     facebookLoginFailure(error);
+                }
+            });
+        } else if (provider.equals("twitter")) {
+            TwitterWrapper.getInstance().login(rootActivity, new TwitterWrapper.LoginComplete() {
+                @Override
+                public void success(String accessToken, String secret) {
+                    twitterLoginSuccess(accessToken, secret);
+                }
+
+                @Override
+                public void failure(OAError error) {
+                    twitterLoginFailure(error);
                 }
             });
         } else {
@@ -349,19 +362,43 @@ public class OAManager {
     }
 
     private void facebookLoginFailure(OAError error) {
+        OALog.warn(String.format("Failed to login with Facebook: %s", error.getMessage()));
         if (loginHandler != null) {
             loginHandler.loginFailure(error);
         }
     }
 
     private void facebookLoginSuccess(String accessToken) {
+        OALog.warn("Logged in with Facebook");
+        retrieveConnectionInfo("facebook", accessToken, null);
+    }
+
+    private void twitterLoginFailure(OAError error) {
+        OALog.warn(String.format("Failed to login with Twitter: %s", error.getMessage()));
+        if (loginHandler != null) {
+            loginHandler.loginFailure(
+                    new OAError(OAError.ErrorCode.OA_ERROR_AUTH_FAIL,
+                    error.getMessage()));
+        }
+    }
+
+    private void twitterLoginSuccess(String accessToken, String secret) {
+        OALog.warn("Logged in with Facebook");
+        retrieveConnectionInfo("facebook", accessToken, secret);
+    }
+
+    private void retrieveConnectionInfo(String platform, String accessToken, String secret) {
+        final ProgressDialog pd = ProgressDialog.show(
+                rootActivity, rootActivity.getString(R.string.reading_user_info), "");
+
         UserService service = ServiceManagerProvider.getInstance().getUserService();
 
-        NativeLoginRequest request = new NativeLoginRequest("facebook", accessToken);
+        NativeLoginRequest request = new NativeLoginRequest(platform, accessToken, secret);
 
         service.info(request, new Callback<ResponseConnection>() {
             @Override
             public void success(ResponseConnection connection, Response response) {
+                pd.hide();
                 if (loginHandler != null) {
                     loginHandler.loginSuccess(connection.data.user, false);
                     loginHandler = null;
@@ -370,6 +407,7 @@ public class OAManager {
 
             @Override
             public void failure(RetrofitError error) {
+                pd.hide();
                 if (loginHandler != null) {
                     loginHandler.loginFailure(new OAError(
                             OAError.ErrorCode.OA_ERROR_CONNECTION_ERROR,
@@ -414,13 +452,12 @@ public class OAManager {
             webLoginComplete(data);
         } else {
             FacebookWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
-            OALog.info(String.format("Invalid request code: %d", requestCode));
+            TwitterWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
         }
     }
 
     public void onSaveInstanceState(Bundle outState) {
         FacebookWrapper.getInstance().onSaveInstanceState(outState);
-
     }
 
     public void onDestroy() {
