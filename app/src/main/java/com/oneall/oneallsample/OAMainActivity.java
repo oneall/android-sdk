@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,7 +26,13 @@ public class OAMainActivity extends ActionBarActivity {
     private static final String TWITTER_KEY = "1nDCsyNMnu0l5hzUCasIBj8FU";
     private static final String TWITTER_SECRET = "R3b5W2iddHnaCwStbyXhRUVHcWQblVuGAMsrWXQ4OygFFlQY2w";
 
+
+    // region Properties
+
     private User user;
+    private Button buttonPost;
+
+    // endregion
 
     private OAManager.LoginHandler loginHandler = new OAManager.LoginHandler() {
         @Override
@@ -37,11 +44,14 @@ public class OAMainActivity extends ActionBarActivity {
                     .execute(user.identity.photos.get(0).value);
 
             OAMainActivity.this.user = user;
+
+            buttonPost.setEnabled(true);
         }
 
         @Override
         public void loginFailure(OAError error) {
             Log.v(OAMainActivity.class.toString(), "Failed to login into OA");
+            buttonPost.setEnabled(false);
         }
     };
 
@@ -88,7 +98,8 @@ public class OAMainActivity extends ActionBarActivity {
             }
         });
 
-        findViewById(R.id.button_post).setOnClickListener(new View.OnClickListener() {
+        buttonPost = (Button) findViewById(R.id.button_post);
+        buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 handlerButtonPost();

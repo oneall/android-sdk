@@ -6,22 +6,21 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".OAMainActivity">
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="@string/login_button"
         android:id="@+id/button_login"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true"/>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="@string/button_post"
         android:id="@+id/button_post"
         android:layout_below="@+id/button_login"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_centerHorizontal="true"
+        android:enabled="false" />
 
     <TextView
         android:text=""
