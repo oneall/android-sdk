@@ -41,7 +41,7 @@ public class OAMainActivity extends ActionBarActivity {
             ((TextView) findViewById(R.id.main_activity_user_name)).setText(user.identity.name.formatted);
 
             new ImageDownloader(((ImageView) findViewById(R.id.main_activity_user_avatar)))
-                    .execute(user.identity.photos.get(0).value);
+                    .execute(user.identity.photos.get(user.identity.photos.size() - 1).value);
 
             OAMainActivity.this.user = user;
 

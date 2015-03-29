@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">OneAll Sample</string>
+    <string name="app_name">OneAll Social Login Sample</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="facebook_app_id">497832153684732</string>
     <string name="main_activity_avatar_description">User avatar</string>
-    <string name="button_post">Post</string>
-    <string name="title_activity_post">PostActivity</string>
+    <string name="button_post"><![CDATA[Post >]]></string>
+    <string name="title_activity_post">Post Message to Networks</string>
     <string name="post_activity_hint_link">Link: http://www.oneall.com</string>
     <string name="post_activity_hint_link_name">Link name: e.g. OneAll Main Site</string>
     <string name="post_activity_hint_link_caption">Link caption</string>
