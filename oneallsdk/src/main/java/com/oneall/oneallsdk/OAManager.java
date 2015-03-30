@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
 
+import com.crashlytics.android.Crashlytics;
 import com.oneall.oneallsdk.rest.ServiceCallback;
 import com.oneall.oneallsdk.rest.ServiceManagerProvider;
 import com.oneall.oneallsdk.rest.models.NativeLoginRequest;
@@ -19,11 +20,14 @@ import com.oneall.oneallsdk.rest.models.User;
 import com.oneall.oneallsdk.rest.service.ConnectionService;
 import com.oneall.oneallsdk.rest.service.MessagePostService;
 import com.oneall.oneallsdk.rest.service.UserService;
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
+import io.fabric.sdk.android.Fabric;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -80,17 +84,6 @@ public class OAManager {
 
     // region Lifecycle
 
-    public static OAManager getInstance(FragmentActivity rootActivity) {
-        if (mInstance == null || mInstance.rootActivity == null) {
-            synchronized (OAManager.class) {
-                if (mInstance == null) {
-                    mInstance = new OAManager(rootActivity);
-                }
-            }
-        }
-        return mInstance;
-    }
-
     public static OAManager getInstance() {
         if (mInstance == null) {
             synchronized (OAManager.class) {
@@ -102,36 +95,27 @@ public class OAManager {
         return mInstance;
     }
 
-    private OAManager() {
-    }
-
-    private OAManager(FragmentActivity rootActivity) {
-        this();
-        this.rootActivity = rootActivity;
-        OALog.init(rootActivity);
-        FacebookWrapper.getInstance().init(rootActivity);
-    }
-
     // endregion
 
     // region Interface methods
 
-    public void setup(String subdomain) {
+    public void setup(
+            FragmentActivity rootActivity,
+            String subdomain,
+            String twitterConsumerKey,
+            String twitterSecret) {
+
+        this.rootActivity = rootActivity;
+        OALog.init(rootActivity);
+        FacebookWrapper.getInstance().init(rootActivity);
+
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(twitterConsumerKey, twitterSecret);
+        Fabric.with(this.rootActivity, new Crashlytics(), new Twitter(authConfig));
+
         OALog.info(String.format("SDK init with subdomain %s", subdomain));
 
         Settings.getInstance().setSubdomain(subdomain);
         ProviderManager.getInstance().refreshProviders(rootActivity);
-    }
-
-    public void setup(
-            String subdomain,
-            String facebookAppId,
-            String twitterConsumerKey,
-            String twitterSecret) {
-
-        setup(subdomain);
-
-        throw new UnsupportedOperationException("Unimplemented");
     }
 
     public Boolean login(FragmentActivity rootActivity, String provider, LoginHandler handler) {
@@ -145,32 +129,36 @@ public class OAManager {
 
         lastNonce = UUID.randomUUID().toString();
 
-        if (provider.equals("facebook")) {
-            FacebookWrapper.getInstance().login(new FacebookWrapper.SessionStateListener() {
-                @Override
-                public void success(String accessToken) {
-                    facebookLoginSuccess(accessToken);
-                }
+        switch (provider) {
+            case "facebook":
+                FacebookWrapper.getInstance().login(new FacebookWrapper.SessionStateListener() {
+                    @Override
+                    public void success(String accessToken) {
+                        facebookLoginSuccess(accessToken);
+                    }
 
-                @Override
-                public void failure(OAError error) {
-                    facebookLoginFailure(error);
-                }
-            });
-        } else if (provider.equals("twitter")) {
-            TwitterWrapper.getInstance().login(rootActivity, new TwitterWrapper.LoginComplete() {
-                @Override
-                public void success(String accessToken, String secret) {
-                    twitterLoginSuccess(accessToken, secret);
-                }
+                    @Override
+                    public void failure(OAError error) {
+                        facebookLoginFailure(error);
+                    }
+                });
+                break;
+            case "twitter":
+                TwitterWrapper.getInstance().login(rootActivity, new TwitterWrapper.LoginComplete() {
+                    @Override
+                    public void success(String accessToken, String secret) {
+                        twitterLoginSuccess(accessToken, secret);
+                    }
 
-                @Override
-                public void failure(OAError error) {
-                    twitterLoginFailure(error);
-                }
-            });
-        } else {
-            webLoginWithProvider();
+                    @Override
+                    public void failure(OAError error) {
+                        twitterLoginFailure(error);
+                    }
+                });
+                break;
+            default:
+                webLoginWithProvider();
+                break;
         }
 
         return true;
@@ -228,6 +216,7 @@ public class OAManager {
 
                     @Override
                     public void failure(ServiceError error) {
+                        //noinspection ThrowableResultOfMethodCallIgnored
                         OALog.warn(String.format(
                                 "Message post failed: %s", error.getRetrofitError().getMessage()));
 

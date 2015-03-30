@@ -4,23 +4,14 @@ import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
 import com.oneall.oneallsdk.OAError;
 import com.oneall.oneallsdk.OAManager;
 import com.oneall.oneallsdk.rest.models.User;
-
-import com.twitter.sdk.android.Twitter;
-import com.twitter.sdk.android.core.TwitterAuthConfig;
-import com.twitter.sdk.android.core.identity.OAuthActivity;
-
-import io.fabric.sdk.android.Fabric;
 
 public class OAMainActivity extends ActionBarActivity {
 
@@ -28,11 +19,12 @@ public class OAMainActivity extends ActionBarActivity {
     private static final String TWITTER_KEY = "1nDCsyNMnu0l5hzUCasIBj8FU";
     private static final String TWITTER_SECRET = "R3b5W2iddHnaCwStbyXhRUVHcWQblVuGAMsrWXQ4OygFFlQY2w";
 
-
     // region Properties
 
     private User user;
     private Button buttonPost;
+    private ImageView imageUserAvatar;
+    private TextView textUserName;
 
     // endregion
 
@@ -40,11 +32,8 @@ public class OAMainActivity extends ActionBarActivity {
         @Override
         public void loginSuccess(User user, Boolean newUser) {
             Log.v(OAMainActivity.class.toString(), "successfully logged into OA");
-            ((TextView) findViewById(R.id.main_activity_user_name)).setText(user.identity.name.formatted);
-
-            new ImageDownloader(((ImageView) findViewById(R.id.main_activity_user_avatar)))
-                    .execute(user.identity.pictureUrl);
-
+            textUserName.setText(user.identity.name.formatted);
+            new ImageDownloader(imageUserAvatar).execute(user.identity.pictureUrl);
             OAMainActivity.this.user = user;
 
             buttonPost.setEnabled(true);
@@ -54,6 +43,8 @@ public class OAMainActivity extends ActionBarActivity {
         public void loginFailure(OAError error) {
             Log.v(OAMainActivity.class.toString(), "Failed to login into OA");
             buttonPost.setEnabled(false);
+            textUserName.setText(null);
+            imageUserAvatar.setImageDrawable(null);
         }
     };
 
@@ -85,13 +76,13 @@ public class OAMainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-        Fabric.with(this, new Crashlytics(), new Twitter(authConfig));
         setContentView(R.layout.activity_oamain);
 
-        OAManager.getInstance(this).setup("urktest");
-
+        OAManager.getInstance().setup(this, "urktest", TWITTER_KEY, TWITTER_SECRET);
         OAManager.getInstance().onCreate(savedInstanceState);
+
+        imageUserAvatar = (ImageView) findViewById(R.id.main_activity_user_avatar);
+        textUserName = (TextView) findViewById(R.id.main_activity_user_name);
 
         findViewById(R.id.button_login).setOnClickListener(new View.OnClickListener() {
             @Override

@@ -12,11 +12,13 @@ import com.facebook.UiLifecycleHelper;
 
 import java.util.Arrays;
 
-/** wraps interface to Facebook */
+/** This class wraps interface to Facebook and hides implementation details */
 public class FacebookWrapper {
     // region Helper classes and interfaces
 
-
+    /**
+     * handler responsible for Facebook status changes
+     */
     private class SessionStatusCallback implements Session.StatusCallback {
         @Override
         public void call(Session session, SessionState state, Exception exception) {
@@ -38,6 +40,8 @@ public class FacebookWrapper {
     private SessionStateListener mListener;
 
     private Activity rootActivity;
+
+    private Session mSession;
 
     /** Facebook UI Helper */
     private UiLifecycleHelper uiHelper = null;
@@ -91,13 +95,40 @@ public class FacebookWrapper {
         switch (sessionState) {
             case OPENED:
             case OPENED_TOKEN_UPDATED:
-                onSessionSuccess(session);
+                if (isSessionChanged(session)) {
+                    mSession = session;
+                    onSessionSuccess(session);
+                }
                 break;
             case CLOSED_LOGIN_FAILED:
             case CLOSED:
                 onSessionFailure(ex);
                 break;
         }
+    }
+
+    private boolean isSessionChanged(Session session) {
+
+        /* check if this is first activation */
+        if (mSession == null) {
+            return true;
+        }
+
+        // Check if session state changed
+        if (mSession.getState() != session.getState())
+            return true;
+
+        // Check if accessToken changed
+        if (mSession.getAccessToken() != null) {
+            if (!mSession.getAccessToken().equals(session.getAccessToken()))
+                return true;
+        }
+        else if (session.getAccessToken() != null) {
+            return true;
+        }
+
+        // Nothing changed
+        return false;
     }
 
     private void onSessionSuccess(Session session) {
