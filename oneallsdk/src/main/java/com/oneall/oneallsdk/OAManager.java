@@ -84,6 +84,10 @@ public class OAManager {
 
     // region Lifecycle
 
+    /** gets a manager instance
+     *
+     * @return a OAManager instance
+     */
     public static OAManager getInstance() {
         if (mInstance == null) {
             synchronized (OAManager.class) {
@@ -99,11 +103,37 @@ public class OAManager {
 
     // region Interface methods
 
+    /**
+     * setup manager instance. should be called before using the manager. Otherwise the manager will
+     * not function.
+     *
+     * @param rootActivity parent fragment activity that will be used for UI tasks
+     *
+     * @param subdomain subdomain of your OneAll application
+     *
+     * @param twitterConsumerKey (optional) Twitter consumer key from
+     *  {@link <a href="https://apps.twitter.com/">https://apps.twitter.com/</a>}
+     *
+     * @param twitterSecret (optional) Twitter secret key from
+     *  {@link <a href="https://apps.twitter.com/">https://apps.twitter.com/</a>}
+     *
+     * @throws java.lang.NullPointerException if {@code rootActivity} is null
+     *
+     * @throws java.lang.IllegalArgumentException if {@code subdomain} is null or empty
+     */
     public void setup(
             FragmentActivity rootActivity,
             String subdomain,
             String twitterConsumerKey,
             String twitterSecret) {
+
+        if (rootActivity == null) {
+            throw new NullPointerException("activity cannot be null");
+        }
+
+        if (subdomain == null || subdomain.trim().length() == 0) {
+            throw new IllegalArgumentException("Subdomain cannot be empty");
+        }
 
         this.rootActivity = rootActivity;
         OALog.init(rootActivity);
@@ -118,9 +148,34 @@ public class OAManager {
         ProviderManager.getInstance().refreshProviders(rootActivity);
     }
 
-    public Boolean login(FragmentActivity rootActivity, String provider, LoginHandler handler) {
+    /**
+     * Starts authentication with OneAll using selected social network. If additional information is
+     *  required for provider, the user is shown a dialog with request for additional data. When all
+     *  the data is provided to the library, authentication process continues using OneAll API
+     *  servers. Upon completion {@code handler} will be used to inform the caller on operation
+     *  result. Information about the user is retrieved as part of the authentication process and
+     *  returned to {@code handler} callback.
+     *
+     *  If the provider specified is "{@code facebook}" native device Facebook authentication is
+     *  used to login the user by using Facebook SDK for Android. If the provider specified is
+     *  "{@code twitter}" native device authentication is used to login the user with help of
+     *  Twitter SDK.
+     *
+     * @param provider provider to use for authentication; list of supported providers can be
+     *                 retrieved using {@link #getProviders()}
+     *
+     * @param handler completion handler, will be used to inform the caller about the end of the
+     *                authentication (either success or failure)
+     *
+     * @return {@code true} if the login process has started successfully, {@code false} otherwise;
+     *  in case of {@code false} return code, {@code handler} will not be called
+     *
+     * @throws java.lang.IllegalStateException if the manager has not been initialized
+     */
+    public Boolean login(String provider, LoginHandler handler) {
+        validateInitialization();
+
         loginHandler = handler;
-        this.rootActivity = rootActivity;
         selectedProvider = ProviderManager.getInstance().findByKey(provider);
 
         if (selectedProvider == null) {
@@ -164,15 +219,72 @@ public class OAManager {
         return true;
     }
 
-    public Boolean login(FragmentActivity rootActivity, LoginHandler handler) {
+    /**
+     * Starts authentication with OneAll. In order to know which method to use for authentication
+     *  new activity is opened with selection of providers that are setup with current provider.
+     *  After the user selects one of the methods using this activity, the result is returned to
+     *  {@link #onActivityResult(int, int, android.content.Intent)} which, in turn, continues
+     *  authentication using selected social network. Upon completion {@code handler} will be used
+     *  to inform the caller on operation result. Information about the user is retrieved as part of
+     *  the authentication process and returned to {@code handler} callback.
+     *
+     *  If the provider specified is "{@code facebook}" native device Facebook authentication is
+     *  used to login the user by using Facebook SDK for Android. If the provider specified is
+     *  "{@code twitter}" native device authentication is used to login the user with help of
+     *  Twitter SDK.
+     *
+     * @param handler completion handler, will be used to inform the caller about the end of the
+     *                authentication (either success or failure)
+     *
+     * @return {@code true} if the login process has started successfully, {@code false} otherwise;
+     *  in case of {@code false} return code, {@code handler} will not be called
+     *
+     * @throws java.lang.IllegalStateException if the manager has not been initialized
+     */
+    public Boolean login(LoginHandler handler) {
+        validateInitialization();
+
         loginHandler = handler;
-        this.rootActivity = rootActivity;
 
         Intent intent = new Intent(rootActivity, ProviderSelectActivity.class);
         rootActivity.startActivityForResult(intent, INTENT_REQUEST_CODE_SELECT_ACTIVITY);
         return true;
     }
 
+    /**
+     * Method used to post message to user wall. Response will include general {@code success} flag
+     * as well as detailed result as received from the server ({@link com.oneall.oneallsdk.MessagePostResult}
+     *
+     * @param text body of the message to be posted
+     *
+     * @param pictureUrl (optional) url of the image to be posted
+     *
+     * @param videoUrl (optional) URL of video to be post
+     *
+     * @param linkUrl (optional) URL to attach to the post
+     *
+     * @param linkName (optional) name of the link posted; has no effect if {@code linkUrl} is {@code null}
+     *
+     * @param linkCaption (optional) caption of the link posted; has no effect if {@code linkUrl} is {@code null}
+     *
+     * @param linkDescription (optional) description of the link posted; has no effect if {@code linkUrl} is {@code null}
+     *
+     * @param enableTracking should the {@code linkUrl} posted use OneAll link tracking?; has no effect if {@code linkUrl} is {@code null}
+     *
+     * @param userToken user token received as part of {@link com.oneall.oneallsdk.rest.models.User#userToken} object received during authentication
+     *
+     * @param publishToken publish token received as part of {@link com.oneall.oneallsdk.rest.models.User#publishToken} object received during authentication
+     *
+     * @param providers array of provider identifiers; list of providers can be obtained by {@link #getProviders()}
+     *
+     * @param handler response handler called on either posting success of failure
+     *
+     * @throws java.lang.IllegalStateException if the manager has not been initialized
+     *
+     * @see #getProviders()
+     * @see com.oneall.oneallsdk.rest.models.User
+     * @see com.oneall.oneallsdk.MessagePostResult
+     */
     public void postMessage(
             String text,
             String pictureUrl,
@@ -186,6 +298,8 @@ public class OAManager {
             String publishToken,
             final Collection<String> providers,
             final OAManagerPostHandler handler) {
+
+        validateInitialization();
 
         MessagePostService service = ServiceManagerProvider.getInstance().getPostService();
         PostMessageRequest request = new PostMessageRequest(
@@ -228,24 +342,34 @@ public class OAManager {
     }
 
     /**
-     * it is impossible to work with GUI (specifically Fragments) from onActivityResult():
-     * http://stackoverflow.com/questions/16265733/
-     *
-     * In order to overcome this, onActivityResult() stores the required operation in queue and
-     * onPostResume() takes care of this when the state has been restored. An ugly solution for an
-     * ugly problem.
+     * handler of onPostResume signal of parent activity
      */
     public void onPostResume() {
+        /* it is impossible to work with GUI (specifically Fragments) from onActivityResult():
+         * http://stackoverflow.com/questions/16265733/
+         *
+         * In order to overcome this, onActivityResult() stores the required operation in queue and
+         * onPostResume() takes care of this when the state has been restored. An ugly solution for an
+         * ugly problem.
+         */
         if (loginOnResume) {
             String providerKey = loginOnResumeProvider;
             loginOnResume = false;
             loginOnResumeProvider = null;
 
-            login(rootActivity, providerKey, loginHandler);
+            login(providerKey, loginHandler);
         }
     }
 
+    /**
+     * Get list of supported providers. All providers are returned and not only ones configured for
+     * specified application
+     *
+     * @return array of providers supported by OneAll API
+     */
     public Collection<String> getProviders() {
+        validateInitialization();
+
         ArrayList<String> rv = new ArrayList<>();
         for (Provider p : ProviderManager.getInstance().getProviders()) {
             rv.add(p.getKey());
@@ -257,7 +381,11 @@ public class OAManager {
 
     // region Utilities
 
-    Callback<ResponseConnection> connectionCallback = new Callback<ResponseConnection>() {
+    /**
+     * callback taking care of connection details retrieval. This is the end of authentication
+     * process, so the user of {@code OAManager} is informed using {@link #loginHandler} listener
+     */
+    private Callback<ResponseConnection> connectionCallback = new Callback<ResponseConnection>() {
         @Override
         public void success(ResponseConnection connection, Response response) {
             if (loginHandler != null) {
@@ -277,6 +405,11 @@ public class OAManager {
         }
     };
 
+    /**
+     * handler of login completion by {@link com.oneall.oneallsdk.WebLoginActivity}
+     *
+     * @param data intent data filled in with login result
+     */
     private void webLoginComplete(Intent data) {
         String url = data.getExtras().getString(WebLoginActivity.INTENT_EXTRA_URL);
 
@@ -290,19 +423,9 @@ public class OAManager {
                 connectionCallback);
     }
 
-    private UserInputDialog.DialogListener userInputListener = new UserInputDialog.DialogListener() {
-        @Override
-        public void onCancel() {
-        }
-
-        @Override
-        public void onAccept(String userInput) {
-            webLoginWithLoginData(userInput);
-        }
-    };
-
     /**
      * actual login with user information already filled in
+     *
      * @param userInput user information if required by this provider, can be null
      */
     private void webLoginWithLoginData(String userInput) {
@@ -315,13 +438,25 @@ public class OAManager {
         rootActivity.startActivityForResult(i, INTENT_REQUEST_CODE_LOGIN);
     }
 
+    /**
+     * starts actual web login with selected provider by opening web view with provider relevant
+     * URL
+     */
     private void webLoginWithProvider() {
         OALog.info(String.format("Login with provider %s", selectedProvider));
 
         if (selectedProvider.getAuthentication().getIsUserInputRequired()) {
             FragmentManager fm = rootActivity.getSupportFragmentManager();
             UserInputDialog dialog = new UserInputDialog();
-            dialog.setListener(userInputListener);
+            dialog.setListener(new UserInputDialog.DialogListener() {
+                @Override
+                public void onCancel() { }
+
+                @Override
+                public void onAccept(String userInput) {
+                    webLoginWithLoginData(userInput);
+                }
+            });
 
             Bundle args = new Bundle();
             args.putString(UserInputDialog.ARGUMENT_USER_INPUT_TYPE, selectedProvider.getAuthentication().getUserInputType());
@@ -334,7 +469,17 @@ public class OAManager {
         }
     }
 
-
+    /**
+     * build URL used to start authentication process with specified provider
+     *
+     * @param provider provider to use for login
+     *
+     * @param nonce nonce generated at the start of authentication process
+     *
+     * @param loginData additional login data to be added to URL parameter
+     *
+     * @return URL to open for user authentication
+     */
     private String getApiUrlForProvider(Provider provider, String nonce, String loginData) {
         String url = String.format(
                 "https://%s.api.oneall.com/socialize/connect/mobile/%s/?nonce=%s&callback_uri=oneall://%s",
@@ -350,6 +495,11 @@ public class OAManager {
         return uriBuilder.build().toString();
     }
 
+    /**
+     * handler of native Facebook authentication failure
+     *
+     * @param error detailed error
+     */
     private void facebookLoginFailure(OAError error) {
         OALog.warn(String.format("Failed to login with Facebook: %s", error.getMessage()));
         if (loginHandler != null) {
@@ -357,11 +507,21 @@ public class OAManager {
         }
     }
 
+    /**
+     * handler of successful native Facebook authentication
+     *
+     * @param accessToken Facebook access token received during authentication
+     */
     private void facebookLoginSuccess(String accessToken) {
         OALog.warn("Logged in with Facebook");
         retrieveConnectionInfo("facebook", accessToken, null);
     }
 
+    /**
+     * handler of native Twitter authentication failure
+     *
+     * @param error detailed error
+     */
     private void twitterLoginFailure(OAError error) {
         OALog.warn(String.format("Failed to login with Twitter: %s", error.getMessage()));
         if (loginHandler != null) {
@@ -371,11 +531,29 @@ public class OAManager {
         }
     }
 
+    /**
+     * handler of successful authentication using native Twitter SDK
+     *
+     * @param accessToken Twitter access token received after authentication process
+     *
+     * @param secret Twitter secret key received after authentication process
+     */
     private void twitterLoginSuccess(String accessToken, String secret) {
         OALog.warn("Logged in with Facebook");
         retrieveConnectionInfo("facebook", accessToken, secret);
     }
 
+    /**
+     * after successful login, user information has to be retrieved, which is the responsibility of
+     * this method
+     *
+     * @param platform platform with which the authentication is performed
+     *
+     * @param accessToken (optional) access token received during native authentication (e.g.
+     *                    Facebook or Twitter)
+     *
+     * @param secret (optional) secret key received during native authentication (e.g. Twitter)
+     */
     private void retrieveConnectionInfo(String platform, String accessToken, String secret) {
         final ProgressDialog pd = ProgressDialog.show(
                 rootActivity, rootActivity.getString(R.string.reading_user_info), "");
@@ -407,24 +585,41 @@ public class OAManager {
         });
     }
 
+    /** validate initialization state, throws an exception if the manager is not initialized */
+    void validateInitialization() {
+        if (rootActivity == null) {
+            throw new IllegalStateException("Manager not initialized");
+        }
+    }
+
     // endregion
 
     // region Activity lifecycle responders
 
-    // To ensure that the sessions are set up correctly, your fragment must override the fragment lifecycle methods: onCreate(), onResume(), onPause(), onDestroy(), onActivityResult() and onSaveInstanceState() and call the corresponding UiLifecycleHelper methods.
-
+    /**
+     * should be called by the using activity to process onCreate signal
+     */
     public void onCreate(Bundle savedInstanceState) {
         FacebookWrapper.getInstance().onCreate(savedInstanceState);
     }
 
+    /**
+     * should be called by the using activity to process onResume signal
+     */
     public void onResume() {
         FacebookWrapper.getInstance().onResume();
     }
 
+    /**
+     * should be called by the using activity to process onPause signal
+     */
     public void onPause() {
         FacebookWrapper.getInstance().onPause();
     }
 
+    /**
+     * should be called by the using activity to process onActivityResult signal
+     */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         /* on cancelled login, nothing to do here */
         if (resultCode == Activity.RESULT_CANCELED ||
@@ -445,10 +640,16 @@ public class OAManager {
         }
     }
 
+    /**
+     * should be called by the using activity to process onSaveInstanceState signal
+     */
     public void onSaveInstanceState(Bundle outState) {
         FacebookWrapper.getInstance().onSaveInstanceState(outState);
     }
 
+    /**
+     * should be called by the using activity to process onDestroy signal
+     */
     public void onDestroy() {
         FacebookWrapper.getInstance().onDestroy();
     }
