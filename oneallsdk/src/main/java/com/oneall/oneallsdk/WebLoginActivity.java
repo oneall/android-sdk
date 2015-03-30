@@ -67,7 +67,7 @@ public class WebLoginActivity extends ActionBarActivity {
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 super.onReceivedError(view, errorCode, description, failingUrl);
-                pageLoadFinished(failingUrl);
+                pageLoadFailed(failingUrl);
             }
         });
         webView.loadUrl(getIntent().getExtras().getString(INTENT_EXTRA_URL));
