@@ -16,6 +16,9 @@ public class TwitterWrapper {
 
     // region Helper classes and interfaces
 
+    /**
+     * interface used for callbacks to the calling applicatoin
+     */
     public interface LoginComplete {
         void success(String accessToken, String secret);
         void failure(OAError error);
@@ -25,6 +28,7 @@ public class TwitterWrapper {
 
     // region Properties
 
+    /** twitter authentication client */
     private TwitterAuthClient client;
 
     // endregion
@@ -37,6 +41,11 @@ public class TwitterWrapper {
         client = new TwitterAuthClient();
     }
 
+    /**
+     * get instance of this wrapper
+     *
+     * @return a wrapper of Twitter client
+     */
     public static TwitterWrapper getInstance() {
         if (mInstance == null) {
             synchronized (TwitterWrapper.class) {
@@ -52,6 +61,13 @@ public class TwitterWrapper {
 
     // region Interface methods
 
+    /**
+     * Login into Twitter using native Android method and Twitter SDK
+     *
+     * @param activity activity to use during login
+     *
+     * @param callback callback to use to inform the caller about operation completion
+     */
     public void login(Activity activity, final LoginComplete callback) {
         client.authorize(activity, new Callback<TwitterSession>() {
             @Override

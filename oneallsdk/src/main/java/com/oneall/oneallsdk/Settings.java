@@ -1,7 +1,7 @@
 package com.oneall.oneallsdk;
 
 /**
- * Created by urk on 9/3/15.
+ * Shared settings wrapper
  */
 public class Settings {
 

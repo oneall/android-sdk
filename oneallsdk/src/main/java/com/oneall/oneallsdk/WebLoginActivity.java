@@ -10,7 +10,9 @@ import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-
+/**
+ * Web view activity used to take the user through authentication
+ */
 public class WebLoginActivity extends ActionBarActivity {
 
     // region Properties

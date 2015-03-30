@@ -21,9 +21,9 @@ import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 /**
- * Created by urk on 9/3/15.
- *
- * Access to providers list
+ * Access to providers list. Retrieves list of providers asynchronously at the initialization and
+ * stores in local cache. Retrieval is performed on every start and can be triggered by calling
+ * {@link #refreshProviders(android.content.Context)}
  */
 public class ProviderManager {
 
@@ -43,6 +43,11 @@ public class ProviderManager {
 
     // region Lifecycle
 
+    /**
+     * get instance of {@code ProviderManager}
+     *
+     * @return a provider manager
+     */
     public static ProviderManager getInstance() {
         if (mInstance == null) {
             synchronized (ProviderManager.class) {
@@ -58,6 +63,11 @@ public class ProviderManager {
 
     // region Interface methods
 
+    /**
+     * force providers refresh. Should be executed as early as possible during application start
+     *
+     * @param context context to use for cache storage
+     */
     public void refreshProviders(final Context context) {
         loadCachedProviders(context);
 
@@ -81,6 +91,11 @@ public class ProviderManager {
         });
     }
 
+    /**
+     * get cached list of providers
+     *
+     * @return list of providers if available; empty list if providers have not been cached yet
+     */
     public Collection<Provider> getProviders() {
         if (providers != null) {
             return new ArrayList<>(providers);
@@ -89,6 +104,13 @@ public class ProviderManager {
         }
     }
 
+    /**
+     * find provider object by its unique key
+     *
+     * @param key key to look up with (e.g. "{@code facebook}"
+     *
+     * @return provider with specified key or {@code null} on failure
+     */
     public Provider findByKey(String key) {
         if (providers == null) {
             return null;
@@ -105,6 +127,13 @@ public class ProviderManager {
 
     // region Utilities
 
+    /**
+     * cache providers on local store to be saved between sessions
+     *
+     * @param context context to use for file storage
+     *
+     * @param providers providers collection to cache
+     */
     private void cacheProviders(Context context, Collection<Provider> providers) {
         FileOutputStream fos = null;
         ObjectOutputStream os = null;
@@ -124,6 +153,12 @@ public class ProviderManager {
         }
     }
 
+    /**
+     * load cached providers from local store. The result is stored in local property and can be
+     * retrieved using {@link #getProviders()}
+     *
+     * @param context context to use for file load
+     */
     private void loadCachedProviders(Context context) {
         FileInputStream fis = null;
         ObjectInputStream is = null;

@@ -87,21 +87,21 @@ public class OAMainActivity extends ActionBarActivity {
         findViewById(R.id.button_login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OAManager.getInstance().login(OAMainActivity.this, loginHandler);
+                OAManager.getInstance().login(loginHandler);
             }
         });
 
         findViewById(R.id.button_main_login_facebook).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OAManager.getInstance().login(OAMainActivity.this, "facebook", loginHandler);
+                OAManager.getInstance().login("facebook", loginHandler);
             }
         });
 
         findViewById(R.id.button_main_login_foursquare).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OAManager.getInstance().login(OAMainActivity.this, "foursquare", loginHandler);
+                OAManager.getInstance().login("foursquare", loginHandler);
             }
         });
 
