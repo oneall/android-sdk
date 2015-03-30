@@ -81,7 +81,6 @@ public class PostActivity extends ActionBarActivity {
                     }
                 }
         );
-
     }
 
     private Collection<String> getProvidersForUser(User user) {

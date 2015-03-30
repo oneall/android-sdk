@@ -11,7 +11,9 @@ import java.util.List;
  * user.json
  *
  * @author Uri Kogan
+ *
  * @see <a href="https://docs.oneall.com/api/resources/connections/read-connection-details/">OneAll- read connection details</a>
+ *
  * @see <a href="https://docs.oneall.com/api/resources/users/read-user-details/">OneAll- read user details</a>
  */
 public class User implements Serializable {
