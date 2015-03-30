@@ -2,6 +2,14 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 def sonatypeRepositoryUrl
+
+if (version.is('unspecified') && hasProperty('VERSION_NAME')) {
+    version = VERSION_NAME;
+}
+
+println 'Version: ' + version
+
+/* select repository URL according to the type of the build */
 if (isReleaseBuild()) {
     println 'RELEASE BUILD'
     sonatypeRepositoryUrl = hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
@@ -27,6 +35,7 @@ afterEvaluate { project ->
                 beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
                 pom.artifactId = POM_ARTIFACT_ID
+                pom.groupId = GROUP
 
                 repository(url: sonatypeRepositoryUrl) {
                     authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
@@ -37,6 +46,7 @@ afterEvaluate { project ->
                     packaging POM_PACKAGING
                     description POM_DESCRIPTION
                     url POM_URL
+                    version project.version
 
                     scm {
                         url POM_SCM_URL

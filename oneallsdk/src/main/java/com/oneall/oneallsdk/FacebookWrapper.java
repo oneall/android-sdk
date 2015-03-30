@@ -16,6 +16,7 @@ import java.util.Arrays;
 public class FacebookWrapper {
     // region Helper classes and interfaces
 
+
     private class SessionStatusCallback implements Session.StatusCallback {
         @Override
         public void call(Session session, SessionState state, Exception exception) {

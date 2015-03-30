@@ -6,7 +6,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -29,9 +28,6 @@ public class ProviderSelectActivity
     // endregion
 
     // region Properties
-
-    private String loginHandlerId;
-
     // endregion
 
     // region Lifecycle
@@ -44,25 +40,14 @@ public class ProviderSelectActivity
         setContentView(R.layout.activity_provider_select);
 
         setupTable();
-        setupButtons();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_provider_select, menu);
-        return true;
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (item.getItemId() == android.R.id.home) {
+            setResult(RESULT_CANCELED, new Intent());
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
@@ -82,13 +67,13 @@ public class ProviderSelectActivity
         if (providers != null && !providers.isEmpty()) {
             setupFullTable(table, fTrans, providers);
         } else {
-            setupEmptyTable(table, fTrans);
+            setupEmptyTable(table);
         }
 
         fTrans.commit();
     }
 
-    private void setupEmptyTable(TableLayout table, FragmentTransaction fTrans) {
+    private void setupEmptyTable(TableLayout table) {
         TableRow tableRow = new TableRow(this);
         TextView tv = new TextView(this);
         tv.setText(getResources().getString(R.string.providers_not_ready_try_again));
@@ -105,31 +90,16 @@ public class ProviderSelectActivity
                 table.addView(tableRow);
 
 
-            /* add provider fragment to table row */
+                /* add provider fragment to table row */
                 ProviderFragment pf = ProviderFragment.newInstance(p.getName(), p.getKey());
-                fTrans.add(R.id.activity_provider_select_table_view /*tableRow.getId()*/, pf);
+                fTrans.add(R.id.activity_provider_select_table_view, pf);
             }
         }
-    }
-
-    private void setupButtons() {
-        findViewById(R.id.button_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                buttonHandlerCancel();
-            }
-        });
     }
 
     // endregion
 
     // region UI Events handler
-
-    private void buttonHandlerCancel() {
-        setResult(RESULT_CANCELED, new Intent());
-        finish();
-    }
-
     // endregion
 
     // region ProviderFragment.OnFragmentInteractionListener

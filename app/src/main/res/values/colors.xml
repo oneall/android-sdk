@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="oa_background">#444</color>
+    <color name="oa_orange">#F9930E</color>
+    <color name="oa_orange_background">#E98300</color>
+    <color name="oa_text">@android:color/white</color>
+    <color name="oa_green">#5C8900</color>
+    <color name="oa_grey_text">#777</color>
+    <color name="oa_dark_text">#222</color>
+</resources>

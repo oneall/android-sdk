@@ -18,6 +18,8 @@ import com.oneall.oneallsdk.rest.models.User;
 
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.identity.OAuthActivity;
+
 import io.fabric.sdk.android.Fabric;
 
 public class OAMainActivity extends ActionBarActivity {
@@ -41,7 +43,7 @@ public class OAMainActivity extends ActionBarActivity {
             ((TextView) findViewById(R.id.main_activity_user_name)).setText(user.identity.name.formatted);
 
             new ImageDownloader(((ImageView) findViewById(R.id.main_activity_user_avatar)))
-                    .execute(user.identity.photos.get(user.identity.photos.size() - 1).value);
+                    .execute(user.identity.pictureUrl);
 
             OAMainActivity.this.user = user;
 
@@ -98,6 +100,20 @@ public class OAMainActivity extends ActionBarActivity {
             }
         });
 
+        findViewById(R.id.button_main_login_facebook).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OAManager.getInstance().login(OAMainActivity.this, "facebook", loginHandler);
+            }
+        });
+
+        findViewById(R.id.button_main_login_foursquare).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OAManager.getInstance().login(OAMainActivity.this, "foursquare", loginHandler);
+            }
+        });
+
         buttonPost = (Button) findViewById(R.id.button_post);
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,28 +132,6 @@ public class OAMainActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         OAManager.getInstance().onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_oamain, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private void handlerButtonPost() {
