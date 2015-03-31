@@ -41,11 +41,13 @@ Add your Facebook App ID to your project's strings file and update your Android 
 4.  Add a uses-permission element to the manifest: `<uses-permission android:name="android.permission.INTERNET"/>`
 5.  Add a meta-data element to the application element:    
 
+```xml
     <application android:label="@string/app_name" ...>
       ...
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
       ...
     </application>
+```
 
 Next, setup your Facebook application by creating and setting up development hash as described in **"Create a Development Key Hash**" and **"Setting a Release Key Hash**" sections of [Getting Started Guide](https://developers.facebook.com/docs/android/getting-started) ** **
 
