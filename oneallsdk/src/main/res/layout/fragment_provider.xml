@@ -1,0 +1,26 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.oneall.oneallsdk.ProviderFragment">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/provider_fragment_image_view"
+            android:layout_gravity="start|top"
+            android:src="@drawable/button_login_facebook"
+            android:contentDescription="@string/provider_fragment_provider_icon" />
+
+        <TextView android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/hello_blank_fragment"
+            android:id="@+id/provider_fragment_text_name"
+            android:gravity="center_vertical"/>
+
+    </LinearLayout>
+
+</FrameLayout>

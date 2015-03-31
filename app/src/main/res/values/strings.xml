@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">OneAll Social Login Sample</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="facebook_app_id">dummy</string>
+    <string name="main_activity_avatar_description">User avatar</string>
+    <string name="button_post"><![CDATA[Post >]]></string>
+    <string name="title_activity_post">Post Message to Networks</string>
+    <string name="post_activity_hint_link">Link: http://www.oneall.com</string>
+    <string name="post_activity_hint_link_name">Link name: e.g. OneAll Main Site</string>
+    <string name="post_activity_hint_link_caption">Link caption</string>
+    <string name="post_activity_hint_link_description">Link Description</string>
+    <string name="post_activity_default_link">http://www.oneall.com</string>
+    <string name="post_activity_default_link_name"><![CDATA[Social Login, Sign On & Social Network Sharing]]></string>
+    <string name="post_activity_default_link_description">OneAll Social Login is used by more than 250,000 websites worldwide, including small blogs, growing startups and large corporate enterprises.</string>
+    <string name="post_activity_default_picture">http://public.oneallcdn.com/img/oneall_header_logo.png</string>
+    <string name="post_activity_hint_picture">Link to posted picture</string>
+    <string name="post_activity_hint_video">Link to Video</string>
+    <string name="post_activity_hint_text">Text</string>
+    <string name="post_activity_default_text">OneAll Social Login is used by more than 250,000 websites worldwide, including small blogs, growing startups and large corporate enterprises.</string>
+    <string name="post_activity_button_share">Share</string>
+    <string name="button_main_facebook">Facebook</string>
+    <string name="label_sdk_buttons">SDK Buttons</string>
+    <string name="button_main_foursquare">Foursquare</string>
+    <string name="text_main_native_buttons">Native buttons</string>
+    <string name="label_main_user_info">User Information</string>
+</resources>
