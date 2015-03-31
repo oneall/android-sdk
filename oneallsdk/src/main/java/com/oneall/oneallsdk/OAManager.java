@@ -517,7 +517,7 @@ public class OAManager {
      * @param accessToken Facebook access token received during authentication
      */
     private void facebookLoginSuccess(String accessToken) {
-        OALog.warn("Logged in with Facebook");
+        OALog.info("Logged in with Facebook");
         retrieveConnectionInfo("facebook", accessToken, null);
     }
 
@@ -543,8 +543,8 @@ public class OAManager {
      * @param secret Twitter secret key received after authentication process
      */
     private void twitterLoginSuccess(String accessToken, String secret) {
-        OALog.warn("Logged in with Facebook");
-        retrieveConnectionInfo("facebook", accessToken, secret);
+        OALog.info("Logged in with Twitter");
+        retrieveConnectionInfo("twitter", accessToken, secret);
     }
 
     /**
