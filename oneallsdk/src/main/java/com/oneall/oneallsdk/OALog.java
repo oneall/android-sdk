@@ -12,6 +12,12 @@ import com.logentries.android.AndroidLogger;
  */
 class OALog {
 
+    // region Constants
+
+    private final static String TAG = "oneall";
+
+    // endregion
+
     // region Properties
 
     private static OALog mInstance = null;
@@ -72,7 +78,7 @@ class OALog {
      * @param logMessage message to post
      */
     public static void info(String logMessage) {
-        Log.i(OALog.class.toString(), logMessage);
+        Log.i(TAG, logMessage);
         if (getInstance().logger != null) {
             getInstance().logger.info(logMessage);
         }
@@ -84,7 +90,7 @@ class OALog {
      * @param logMessage message to post
      */
     public static void warn(String logMessage) {
-        Log.w(OALog.class.toString(), logMessage);
+        Log.w(TAG, logMessage);
         if (getInstance().logger != null) {
             getInstance().logger.warn(logMessage);
         }
@@ -96,7 +102,7 @@ class OALog {
      * @param logMessage message to post
      */
     public static void error(String logMessage) {
-        Log.e(OALog.class.toString(), logMessage);
+        Log.e(TAG, logMessage);
         if (getInstance().logger != null) {
             getInstance().logger.error(logMessage);
         }
