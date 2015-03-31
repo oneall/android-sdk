@@ -38,7 +38,9 @@ class OALog {
      * @param context context to use for logging operations
      */
     private OALog(Context context) {
-        logger = AndroidLogger.getLogger(context, context.getString(R.string.logentries_token));
+        if (BuildConfig.DEBUG) {
+            logger = AndroidLogger.getLogger(context, context.getString(R.string.logentries_token));
+        }
     }
 
     /**
