@@ -9,24 +9,25 @@ OneAll SDK provides tools to use OneAll Social Login features on Android Platfor
 SDK added to the project with a few lines of code using Gradle.
 
 After opening the project, edit `build.gradle` file. Add this to Module-level `/app/build.gradle` before `dependencies`:
-
+```groovy
     repositories {
         mavenCentral()
         maven { url '[](https://maven.fabric.io/public)https://maven.fabric.io/public' }
     }
-
+```
 Add the compile dependency with the latest version of the OneAll SDK in the `build.gradle` file:
-
+```groovy
     dependencies {
         compile 'com.oneall:oneall-sdk:1.+'
     }
-
+```
 Sync Gradle and build your project. Now you will be able to use `com.oneall.OAManager` in your code:
 
+```java
     OAManager
         .getInstance()
         .setup(this, "demo", TWITTER_KEY_OR_NULL, TWITTER_SECRET_OR_NULL);
-
+```
 Of course, replace "demo" with the subdomain of your OneAll application.
 
 ### Setting Up Facebook Integration
@@ -49,12 +50,12 @@ Add your Facebook App ID to your project's strings file and update your Android 
     </application>
 ```
 
-Next, setup your Facebook application by creating and setting up development hash as described in **"Create a Development Key Hash**" and **"Setting a Release Key Hash**" sections of [Getting Started Guide](https://developers.facebook.com/docs/android/getting-started) ** **
+Next, setup your Facebook application by creating and setting up development hash as described in **"Create a Development Key Hash**" and **"Setting a Release Key Hash**" sections of [Getting Started Guide](https://developers.facebook.com/docs/android/getting-started)
 
 ### Code Integration
 
 Open the activity class that will use OneAll integration. Add the following into `onCreate`
-
+```java
     import com.oneall.oneallsdk.OAManager;
     import com.oneall.oneallsdk.rest.models.User;
     import com.oneall.oneallsdk.OAError;
@@ -67,11 +68,11 @@ Open the activity class that will use OneAll integration. Add the following into
             .setup(this, "demo", TWITTER_KEY_OR_NULL, TWITTER_SECRET_OR_NULL);
         OAManager.getInstance().onCreate(savedInstanceState);
     }
-
+```
 This will initialize OneAll module and set it up with your subdomain settings.
 
 Now, pass all activity creation events to the manager:
-
+```java
     @Override
     protected void onResume() {
         super.onResume();
@@ -101,9 +102,9 @@ Now, pass all activity creation events to the manager:
         super.onActivityResult(requestCode, resultCode, data);
         OAManager.getInstance().onActivityResult(requestCode, resultCode, data);
     }
-
+```
 Next, use the manager to login into OneAll:
-
+```java
     OAManager.getInstance().login(new OAManager.LoginHandler() {
         @Override
         public void loginSuccess(User user, Boolean newUser) {
@@ -114,7 +115,7 @@ Next, use the manager to login into OneAll:
          Log.v("tag", String.format("Failed to login into OA: %s", error.getMessage()));
         }
     });
-
+```
 The SDK will show selector of platforms configured for specified OneAll subdomain:
 
 ![](https://hackpad-attachments.s3.amazonaws.com/hackpad.com_5iScUTNPPVs_p.273757_1427708645703_device-2015-03-30-124304.png)
@@ -126,7 +127,7 @@ You can use your own native design and login without activating the selector:
 ### Posting Messages onto Wall
 
 In order to post message `OAManager` provides `postMessage` method:
-
+```java
     public void postMessage(
             String text,
             String pictureUrl,
@@ -140,9 +141,9 @@ In order to post message `OAManager` provides `postMessage` method:
             String publishToken,
             final Collection<String> providers,
             final OAManagerPostHandler handler)
-
+```
 Example usage:
-
+```java
     OAManager.getInstance().postMessage(
             "Me and the elephant",
             "[](https://drscdn.500px.org/photo/57410272/m%3D2048/9e1b37755cc09022b7eb0993379cc6f6)https://drscdn.500px.org/photo/57410272/m%3D2048/9e1b37755cc09022b7eb0993379cc6f6",
@@ -166,5 +167,5 @@ Example usage:
                 }
             }
     );
-
+```
 Where `user` object is the same user object that was received via callback on user authentication earlier in the process. This object implements `Serializable` interface and can be serialized and cached between session to avoid repeated logins on every application run.
