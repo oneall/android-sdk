@@ -186,17 +186,21 @@ public class OAManager {
 
         switch (provider) {
             case "facebook":
-                FacebookWrapper.getInstance().login(new FacebookWrapper.SessionStateListener() {
-                    @Override
-                    public void success(String accessToken) {
-                        facebookLoginSuccess(accessToken);
-                    }
+                boolean res =
+                    FacebookWrapper.getInstance().login(new FacebookWrapper.SessionStateListener() {
+                        @Override
+                        public void success(String accessToken) {
+                            facebookLoginSuccess(accessToken);
+                        }
 
-                    @Override
-                    public void failure(OAError error) {
-                        facebookLoginFailure(error);
-                    }
-                });
+                        @Override
+                        public void failure(OAError error) {
+                            facebookLoginFailure(error);
+                        }
+                    });
+                if (!res) {
+                    webLoginWithProvider();
+                }
                 break;
             case "twitter":
                 TwitterWrapper.getInstance().login(rootActivity, new TwitterWrapper.LoginComplete() {

@@ -71,7 +71,7 @@ public class FacebookWrapper {
         this.rootActivity = rootActivity;
     }
 
-    public void login(SessionStateListener listener) {
+    public boolean login(SessionStateListener listener) {
         mListener = listener;
         Session session = Session.getActiveSession();
         if (session != null) {
@@ -82,6 +82,9 @@ public class FacebookWrapper {
             } else {
                 Session.openActiveSession(rootActivity, true, statusCallback);
             }
+            return true;
+        } else {
+            return false;
         }
     }
 
