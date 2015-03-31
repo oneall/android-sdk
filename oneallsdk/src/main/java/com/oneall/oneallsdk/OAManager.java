@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.content.Intent;
 
-import com.crashlytics.android.Crashlytics;
 import com.oneall.oneallsdk.rest.ServiceCallback;
 import com.oneall.oneallsdk.rest.ServiceManagerProvider;
 import com.oneall.oneallsdk.rest.models.NativeLoginRequest;
@@ -140,7 +139,7 @@ public class OAManager {
         FacebookWrapper.getInstance().init(rootActivity);
 
         TwitterAuthConfig authConfig = new TwitterAuthConfig(twitterConsumerKey, twitterSecret);
-        Fabric.with(this.rootActivity, new Crashlytics(), new Twitter(authConfig));
+        Fabric.with(this.rootActivity, new Twitter(authConfig));
 
         OALog.info(String.format("SDK init with subdomain %s", subdomain));
 
