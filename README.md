@@ -118,7 +118,7 @@ Next, use the manager to login into OneAll:
 ```
 The SDK will show selector of platforms configured for specified OneAll subdomain:
 
-![](https://hackpad-attachments.s3.amazonaws.com/hackpad.com_5iScUTNPPVs_p.273757_1427708645703_device-2015-03-30-124304.png)
+![](https://raw.githubusercontent.com/oneall/android-sdk/master/screenshots/login_providers_selector.png)
 
 You can use your own native design and login without activating the selector:
 
