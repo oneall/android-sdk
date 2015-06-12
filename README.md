@@ -12,7 +12,7 @@ After opening the project, edit `build.gradle` file. Add this to Module-level `/
 ```groovy
     repositories {
         mavenCentral()
-        maven { url '[](https://maven.fabric.io/public)https://maven.fabric.io/public' }
+        maven { 'https://maven.fabric.io/public' }
     }
 ```
 Add the compile dependency with the latest version of the OneAll SDK in the `build.gradle` file:
