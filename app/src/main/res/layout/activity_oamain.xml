@@ -81,6 +81,15 @@
                 android:text="@string/button_main_foursquare"
                 android:background="@drawable/button_background"
                 android:textColor="@color/oa_text"/>
+
+            <Button
+                android:id="@+id/button_main_login_twitter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="@string/button_main_twitter"
+                android:background="@drawable/button_background"
+                android:textColor="@color/oa_text"/>
         </LinearLayout>
     </LinearLayout>
 

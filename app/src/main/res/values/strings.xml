@@ -23,6 +23,7 @@
     <string name="button_main_facebook">Facebook</string>
     <string name="label_sdk_buttons">SDK Buttons</string>
     <string name="button_main_foursquare">Foursquare</string>
+    <string name="button_main_twitter">Twitter</string>
     <string name="text_main_native_buttons">Native buttons</string>
     <string name="label_main_user_info">User Information</string>
 </resources>
