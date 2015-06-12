@@ -61,6 +61,15 @@ public class FacebookWrapper {
         return mInstance;
     }
 
+    public static void destroyInstance() {
+        synchronized (FacebookWrapper.class) {
+            if (mInstance != null) {
+                mInstance.onDestroy();
+                mInstance = null;
+            }
+        }
+    }
+
     // endregion
 
     // region Interface methods

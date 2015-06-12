@@ -103,14 +103,15 @@ public class OAManager {
     }
 
     /**
-     * destroys the current instance opening it
-     * up for garbage collection
+     * destroys the current instance and its dependencies,
+     * opening them up for garbage collection
      */
     public static void destroyInstance() {
         synchronized (OAManager.class) {
             if (mInstance != null) {
                 // clean up
-                mInstance.onDestroy();
+                FacebookWrapper.destroyInstance();
+                TwitterWrapper.destroyInstance();
                 // allow instance to be GCed
                 mInstance = null;
             }
