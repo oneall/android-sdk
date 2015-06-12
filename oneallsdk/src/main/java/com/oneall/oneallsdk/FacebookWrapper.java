@@ -1,14 +1,14 @@
 package com.oneall.oneallsdk;
 
+import com.facebook.Session;
+import com.facebook.SessionState;
+import com.facebook.UiLifecycleHelper;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.UiLifecycleHelper;
 
 import java.util.Arrays;
 
@@ -39,8 +39,6 @@ public class FacebookWrapper {
 
     private SessionStateListener mListener;
 
-    private Activity rootActivity;
-
     private Session mSession;
 
     /** Facebook UI Helper */
@@ -67,20 +65,16 @@ public class FacebookWrapper {
 
     // region Interface methods
 
-    public void init(Activity rootActivity) {
-        this.rootActivity = rootActivity;
-    }
-
-    public boolean login(SessionStateListener listener) {
+    public boolean login(Activity activity, SessionStateListener listener) {
         mListener = listener;
         Session session = Session.getActiveSession();
         if (session != null) {
             if (!session.isOpened() && !session.isClosed()) {
-                session.openForRead(new Session.OpenRequest(rootActivity)
+                session.openForRead(new Session.OpenRequest(activity)
                         .setPermissions(Arrays.asList("public_profile"))
                         .setCallback(statusCallback));
             } else {
-                Session.openActiveSession(rootActivity, true, statusCallback);
+                Session.openActiveSession(activity, true, statusCallback);
             }
             return true;
         } else {
@@ -167,8 +161,8 @@ public class FacebookWrapper {
 
     // region Activity lifecycle responders
 
-    public void onCreate(Bundle savedInstanceState) {
-        uiHelper = new UiLifecycleHelper(rootActivity, statusCallback);
+    public void onCreate(Activity activity, Bundle savedInstanceState) {
+        uiHelper = new UiLifecycleHelper(activity, statusCallback);
         uiHelper.onCreate(savedInstanceState);
     }
 
