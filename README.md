@@ -18,7 +18,7 @@ After opening the project, edit `build.gradle` file. Add this to Module-level `/
 Add the compile dependency with the latest version of the OneAll SDK in the `build.gradle` file:
 ```groovy
     dependencies {
-        compile 'com.oneall:oneall-sdk:0.9'
+        compile 'com.oneall:oneall-sdk:1.0'
     }
 ```
 Sync Gradle and build your project. Now you will be able to use `com.oneall.OAManager` in your code:
