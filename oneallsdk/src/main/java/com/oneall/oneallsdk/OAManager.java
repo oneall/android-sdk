@@ -64,7 +64,7 @@ public class OAManager {
     private static OAManager mInstance = null;
 
     /** application context */
-    private Context appContext = null;
+    private Context mAppContext = null;
 
     /** login handler to call back */
     private LoginHandler loginHandler;
@@ -149,17 +149,17 @@ public class OAManager {
         }
 
         // make sure the ref we hold is from the application context
-        appContext = context.getApplicationContext();
+        mAppContext = context.getApplicationContext();
 
-        OALog.init(appContext);
+        OALog.init(mAppContext);
 
         TwitterAuthConfig authConfig = new TwitterAuthConfig(twitterConsumerKey, twitterSecret);
-        Fabric.with(this.appContext, new Twitter(authConfig));
+        Fabric.with(this.mAppContext, new Twitter(authConfig));
 
         OALog.info(String.format("SDK init with subdomain %s", subdomain));
 
         Settings.getInstance().setSubdomain(subdomain);
-        ProviderManager.getInstance().refreshProviders(appContext);
+        ProviderManager.getInstance().refreshProviders(mAppContext);
     }
 
     /**
@@ -184,7 +184,7 @@ public class OAManager {
      * in case of {@code false} return code, {@code handler} will not be called
      * @throws java.lang.IllegalStateException if the manager has not been initialized
      */
-    public Boolean login(Activity activity, String provider, LoginHandler handler) {
+    public Boolean login(final Activity activity, String provider, LoginHandler handler) {
         validateInitialization();
 
         loginHandler = handler;
@@ -204,7 +204,7 @@ public class OAManager {
                                 new FacebookWrapper.SessionStateListener() {
                                     @Override
                                     public void success(String accessToken) {
-                                        facebookLoginSuccess(accessToken);
+                                        facebookLoginSuccess(activity, accessToken);
                                     }
 
                                     @Override
@@ -220,7 +220,7 @@ public class OAManager {
                 TwitterWrapper.getInstance().login(activity, new TwitterWrapper.LoginComplete() {
                     @Override
                     public void success(String accessToken, String secret) {
-                        twitterLoginSuccess(accessToken, secret);
+                        twitterLoginSuccess(activity, accessToken, secret);
                     }
 
                     @Override
@@ -405,7 +405,7 @@ public class OAManager {
             if (loginHandler != null) {
                 loginHandler.loginFailure(new OAError(
                         OAError.ErrorCode.OA_ERROR_CONNECTION_ERROR,
-                        appContext.getResources().getString(R.string.connection_failure)));
+                        mAppContext.getResources().getString(R.string.connection_failure)));
                 loginHandler = null;
             }
         }
@@ -513,11 +513,12 @@ public class OAManager {
     /**
      * handler of successful native Facebook authentication
      *
+     * @param guiContext  context used for GUI tasks
      * @param accessToken Facebook access token received during authentication
      */
-    private void facebookLoginSuccess(String accessToken) {
+    private void facebookLoginSuccess(Context guiContext, String accessToken) {
         OALog.info("Logged in with Facebook");
-        retrieveConnectionInfo("facebook", accessToken, null);
+        retrieveConnectionInfo(guiContext, "facebook", accessToken, null);
     }
 
     /**
@@ -537,29 +538,33 @@ public class OAManager {
     /**
      * handler of successful authentication using native Twitter SDK
      *
+     * @param guiContext  context used for GUI tasks
      * @param accessToken Twitter access token received after authentication process
      * @param secret      Twitter secret key received after authentication process
      */
-    private void twitterLoginSuccess(String accessToken, String secret) {
+    private void twitterLoginSuccess(Context guiContext, String accessToken, String secret) {
         OALog.info("Logged in with Twitter");
-        retrieveConnectionInfo("twitter", accessToken, secret);
+        retrieveConnectionInfo(guiContext, "twitter", accessToken, secret);
     }
 
     /**
      * after successful login, user information has to be retrieved, which is the responsibility of
      * this method
      *
+     * @param guiContext  context used for GUI tasks
      * @param platform    platform with which the authentication is performed
      * @param accessToken (optional) access token received during native authentication (e.g.
      *                    Facebook or Twitter)
      * @param secret      (optional) secret key received during native authentication (e.g. Twitter)
      */
-    private void retrieveConnectionInfo(String platform, String accessToken, String secret) {
+    private void retrieveConnectionInfo(
+            Context guiContext, String platform, String accessToken, String secret) {
+
         final ProgressDialog pd = ProgressDialog.show(
-                appContext, appContext.getString(R.string.reading_user_info), "");
-
+                guiContext,
+                guiContext.getString(R.string.reading_user_info_title),
+                guiContext.getString(R.string.reading_user_info_message));
         UserService service = ServiceManagerProvider.getInstance().getUserService();
-
         NativeLoginRequest request = new NativeLoginRequest(platform, accessToken, secret);
 
         service.info(request, new Callback<ResponseConnection>() {
@@ -582,7 +587,7 @@ public class OAManager {
                 if (loginHandler != null) {
                     loginHandler.loginFailure(new OAError(
                             OAError.ErrorCode.OA_ERROR_CONNECTION_ERROR,
-                            appContext.getResources().getString(R.string.connection_failure)));
+                            mAppContext.getResources().getString(R.string.connection_failure)));
                     loginHandler = null;
                 }
             }
@@ -591,7 +596,7 @@ public class OAManager {
 
     /** validate initialization state, throws an exception if the manager is not initialized */
     void validateInitialization() {
-        if (appContext == null) {
+        if (mAppContext == null) {
             throw new IllegalStateException("Manager not initialized");
         }
     }

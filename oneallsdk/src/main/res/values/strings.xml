@@ -19,5 +19,6 @@
     <string name="provider_fragment_provider_icon">Provider icon</string>
     <string name="providers_not_ready_try_again">Providers are not ready. Try again in a few seconds.</string>
     <string name="title_activity_twitter_login">TwitterLoginActivity</string>
-    <string name="reading_user_info">Retrieving information</string>
+    <string name="reading_user_info_message">Retrieving information</string>
+    <string name="reading_user_info_title">Patience</string>
 </resources>

@@ -3,7 +3,6 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="facebook_app_id">dummy</string>
     <string name="main_activity_avatar_description">User avatar</string>
     <string name="button_post"><![CDATA[Post >]]></string>
     <string name="title_activity_post">Post Message to Networks</string>
@@ -25,4 +24,9 @@
     <string name="button_main_foursquare">Foursquare</string>
     <string name="text_main_native_buttons">Native buttons</string>
     <string name="label_main_user_info">User Information</string>
+
+    <string name="facebook_app_id">YOUR FACEBOOK APP ID HERE</string>
+    <string name="twitter_consumer_key">YOUR TWITTER CONSUMER KEY HERE</string>
+    <string name="twitter_consumer_secret">YOUR TWITTER CONSUMER SECRET HERE</string>
+
 </resources>
