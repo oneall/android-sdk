@@ -7,7 +7,7 @@ OneAll SDK provides tools to use OneAll Social Login features on Android Platfor
 ### Running Sample Application
 
 In order to run sample application, number of specific settings have to be updated in the code. Open `app/src/main/res/values/strings.xml` file and update the following values:
-- `oneall_subdomain`- OneAll application subdomain from your []application dashboard](https://app.oneall.com/applications/).
+- `oneall_subdomain`- OneAll application subdomain from your [application dashboard](https://app.oneall.com/applications/).
 - `facebook_app_id`- Facebook application ID used for authentication.
 - `twitter_consumer_key`- Twitter application consumer key from [Twitter Application Settings](http://apps.twitter.com/).
 - `twitter_consumer_secret`- Twitter application consumer secrect from [Twitter Application Settings](http://apps.twitter.com/).
