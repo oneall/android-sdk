@@ -25,6 +25,7 @@
     <string name="text_main_native_buttons">Native buttons</string>
     <string name="label_main_user_info">User Information</string>
 
+    <string name="oneall_subdomain">YOUR ONEALL SUBDOMAIN HERE</string>
     <string name="facebook_app_id">YOUR FACEBOOK APP ID HERE</string>
     <string name="twitter_consumer_key">YOUR TWITTER CONSUMER KEY HERE</string>
     <string name="twitter_consumer_secret">YOUR TWITTER CONSUMER SECRET HERE</string>

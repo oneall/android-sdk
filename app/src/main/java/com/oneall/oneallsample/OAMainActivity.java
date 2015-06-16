@@ -18,6 +18,7 @@ public class OAMainActivity extends ActionBarActivity {
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
     private String mTwitterKey;
     private String mTwitterSecret;
+    private String mSubdomain;
 
     // region Properties
 
@@ -81,8 +82,9 @@ public class OAMainActivity extends ActionBarActivity {
 
         mTwitterKey = getString(R.string.twitter_consumer_key);
         mTwitterSecret = getString(R.string.twitter_consumer_secret);
+        mSubdomain = getString(R.string.oneall_subdomain);
 
-        OAManager.getInstance().setup(this, "urktest", mTwitterKey, mTwitterSecret);
+        OAManager.getInstance().setup(this, mSubdomain, mTwitterKey, mTwitterSecret);
         OAManager.getInstance().onCreate(this, savedInstanceState);
 
         imageUserAvatar = (ImageView) findViewById(R.id.main_activity_user_avatar);
