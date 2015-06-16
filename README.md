@@ -12,7 +12,7 @@ After opening the project, edit `build.gradle` file. Add this to Module-level `/
 ```groovy
     repositories {
         mavenCentral()
-        maven { url '[](https://maven.fabric.io/public)https://maven.fabric.io/public' }
+        maven { 'https://maven.fabric.io/public' }
     }
 ```
 Add the compile dependency with the latest version of the OneAll SDK in the `build.gradle` file:
@@ -66,7 +66,7 @@ Open the activity class that will use OneAll integration. Add the following into
         OAManager
             .getInstance()
             .setup(this, "demo", TWITTER_KEY_OR_NULL, TWITTER_SECRET_OR_NULL);
-        OAManager.getInstance().onCreate(savedInstanceState);
+        OAManager.getInstance().onCreate(this, savedInstanceState);
     }
 ```
 This will initialize OneAll module and set it up with your subdomain settings.
@@ -77,6 +77,11 @@ Now, pass all activity creation events to the manager:
     protected void onResume() {
         super.onResume();
         OAManager.getInstance().onResume();
+    }
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        OAManager.getInstance().onPostResume(this);
     }
     @Override
     protected void onPause() {
@@ -93,11 +98,6 @@ Now, pass all activity creation events to the manager:
         super.onSaveInstanceState(outState);
         OAManager.getInstance().onSaveInstanceState(outState);
     }
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        OAManager.getInstance().onPostResume();
-    }
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         OAManager.getInstance().onActivityResult(requestCode, resultCode, data);
@@ -105,7 +105,7 @@ Now, pass all activity creation events to the manager:
 ```
 Next, use the manager to login into OneAll:
 ```java
-    OAManager.getInstance().login(new OAManager.LoginHandler() {
+    OAManager.getInstance().login(this, new OAManager.LoginHandler() {
         @Override
         public void loginSuccess(User user, Boolean newUser) {
             Log.v("tag", String.format("OA user %s", user.identity.name.formatted));

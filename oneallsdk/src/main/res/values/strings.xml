@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">OneAll SDK</string>
-    <string name="logentries_token">241d9e8d-4054-431a-a600-27d36c49b107</string>
+    <string name="logentries_token">dummy</string>
     <string name="title_activity_provider_select">Login with a social network</string>
 
     <string name="hello_world">Hello world!</string>

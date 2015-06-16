@@ -1,13 +1,13 @@
 package com.oneall.oneallsdk;
 
-import android.app.Activity;
-import android.content.Intent;
-
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterAuthClient;
+
+import android.app.Activity;
+import android.content.Intent;
 
 /**
  * Class used to take care of Twitter authentication
@@ -55,6 +55,14 @@ public class TwitterWrapper {
             }
         }
         return mInstance;
+    }
+
+    public static void destroyInstance() {
+        synchronized (TwitterWrapper.class) {
+            if (mInstance != null) {
+                mInstance = null;
+            }
+        }
     }
 
     // endregion
