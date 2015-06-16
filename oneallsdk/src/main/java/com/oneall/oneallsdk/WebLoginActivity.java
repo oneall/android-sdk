@@ -49,7 +49,7 @@ public class WebLoginActivity extends ActionBarActivity {
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                OALog.info(String.format("Page loading starte: %s", url));
+                OALog.info(String.format("Page loading state: %s", url));
                 if (progressDialog == null) {
                     progressDialog = ProgressDialog.show(
                             WebLoginActivity.this,
@@ -75,9 +75,19 @@ public class WebLoginActivity extends ActionBarActivity {
         webView.loadUrl(getIntent().getExtras().getString(INTENT_EXTRA_URL));
     }
 
+    @Override
+    protected void onDestroy() {
+        if (progressDialog != null) {
+            // avoid leaking the progress window
+            progressDialog.dismiss();
+        }
+
+        super.onDestroy();
+    }
+
     private void pageLoadFailed(String url) {
         if (progressDialog != null) {
-            progressDialog.hide();
+            progressDialog.dismiss();
             progressDialog = null;
         }
 
@@ -88,7 +98,7 @@ public class WebLoginActivity extends ActionBarActivity {
     private void pageLoadFinished(String url) {
         OALog.info(String.format("Page loading complete: %s", url));
         if (progressDialog != null) {
-            progressDialog.hide();
+            progressDialog.dismiss();
             progressDialog = null;
         }
     }

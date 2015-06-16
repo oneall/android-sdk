@@ -1,23 +1,23 @@
 package com.oneall.oneallsample;
 
+import com.oneall.oneallsdk.OAError;
+import com.oneall.oneallsdk.OAManager;
+import com.oneall.oneallsdk.rest.models.User;
+
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.oneall.oneallsdk.OAError;
-import com.oneall.oneallsdk.OAManager;
-import com.oneall.oneallsdk.rest.models.User;
-
 public class OAMainActivity extends ActionBarActivity {
 
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = "1nDCsyNMnu0l5hzUCasIBj8FU";
-    private static final String TWITTER_SECRET = "R3b5W2iddHnaCwStbyXhRUVHcWQblVuGAMsrWXQ4OygFFlQY2w";
+    private String mTwitterKey;
+    private String mTwitterSecret;
 
     // region Properties
 
@@ -64,6 +64,7 @@ public class OAMainActivity extends ActionBarActivity {
     protected void onDestroy() {
         super.onDestroy();
         OAManager.getInstance().onDestroy();
+        OAManager.destroyInstance();
     }
 
     @Override
@@ -78,8 +79,11 @@ public class OAMainActivity extends ActionBarActivity {
 
         setContentView(R.layout.activity_oamain);
 
-        OAManager.getInstance().setup(this, "urktest", TWITTER_KEY, TWITTER_SECRET);
-        OAManager.getInstance().onCreate(savedInstanceState);
+        mTwitterKey = getString(R.string.twitter_consumer_key);
+        mTwitterSecret = getString(R.string.twitter_consumer_secret);
+
+        OAManager.getInstance().setup(this, "urktest", mTwitterKey, mTwitterSecret);
+        OAManager.getInstance().onCreate(this, savedInstanceState);
 
         imageUserAvatar = (ImageView) findViewById(R.id.main_activity_user_avatar);
         textUserName = (TextView) findViewById(R.id.main_activity_user_name);
@@ -87,21 +91,21 @@ public class OAMainActivity extends ActionBarActivity {
         findViewById(R.id.button_login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OAManager.getInstance().login(loginHandler);
+                OAManager.getInstance().login(OAMainActivity.this, loginHandler);
             }
         });
 
         findViewById(R.id.button_main_login_facebook).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OAManager.getInstance().login("facebook", loginHandler);
+                OAManager.getInstance().login(OAMainActivity.this, "facebook", loginHandler);
             }
         });
 
         findViewById(R.id.button_main_login_foursquare).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                OAManager.getInstance().login("foursquare", loginHandler);
+                OAManager.getInstance().login(OAMainActivity.this, "foursquare", loginHandler);
             }
         });
 
@@ -117,7 +121,7 @@ public class OAMainActivity extends ActionBarActivity {
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        OAManager.getInstance().onPostResume();
+        OAManager.getInstance().onPostResume(this);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
