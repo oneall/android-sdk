@@ -1,10 +1,10 @@
 package com.oneall.oneallsdk;
 
-import android.content.Context;
-
 import com.oneall.oneallsdk.rest.ServiceManagerProvider;
-import com.oneall.oneallsdk.rest.models.ResponseProvidersList;
 import com.oneall.oneallsdk.rest.models.Provider;
+import com.oneall.oneallsdk.rest.models.ResponseProvidersList;
+
+import android.content.Context;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -64,6 +64,15 @@ public class ProviderManager {
     // region Interface methods
 
     /**
+     * Updates the list of providers without any additional changes.
+     *
+     * @param providers The new list of providers
+     */
+    void updateProviders(List<Provider> providers) {
+        this.providers = providers;
+    }
+
+    /**
      * force providers refresh. Should be executed as early as possible during application start
      *
      * @param context context to use for cache storage
@@ -79,9 +88,13 @@ public class ProviderManager {
                         .getProviders()
                         .getEntries();
 
-                cacheProviders(context, pps);
-                providers = pps;
-                OALog.info(String.format("Parsed %d providers from server", pps.size()));
+                if(pps != null) {
+                    cacheProviders(context, pps);
+                    providers = pps;
+                    OALog.info(String.format("Parsed %d providers from server", pps.size()));
+                } else {
+                    OALog.error("Failed to parse providers from server: got null");
+                }
             }
 
             @Override
@@ -168,9 +181,10 @@ public class ProviderManager {
         try {
             fis = context.openFileInput(PROVIDERS_CACHE_FILE);
             is = new ObjectInputStream(fis);
-            providers = (Collection<Provider>) is.readObject();
+            Collection<Provider> tmp = (Collection<Provider>) is.readObject();
 
-            if (providers != null) {
+            if (tmp != null && !tmp.isEmpty()) {
+                providers = tmp;
                 OALog.info(String.format("Loaded %d cached providers", providers.size()));
             }
         } catch (FileNotFoundException ignored) {

@@ -20,6 +20,7 @@ public class FacebookWrapper {
      * handler responsible for Facebook status changes
      */
     private class SessionStatusCallback implements Session.StatusCallback {
+
         @Override
         public void call(Session session, SessionState state, Exception exception) {
             onSessionStateChange(session, state, exception);
@@ -27,7 +28,9 @@ public class FacebookWrapper {
     }
 
     public interface SessionStateListener {
+
         void success(String accessToken);
+
         void failure(OAError error);
     }
 
@@ -107,7 +110,6 @@ public class FacebookWrapper {
                 }
                 break;
             case CLOSED_LOGIN_FAILED:
-            case CLOSED:
                 onSessionFailure(ex);
                 break;
         }
@@ -121,15 +123,16 @@ public class FacebookWrapper {
         }
 
         // Check if session state changed
-        if (mSession.getState() != session.getState())
+        if (mSession.getState() != session.getState()) {
             return true;
+        }
 
         // Check if accessToken changed
         if (mSession.getAccessToken() != null) {
-            if (!mSession.getAccessToken().equals(session.getAccessToken()))
+            if (!mSession.getAccessToken().equals(session.getAccessToken())) {
                 return true;
-        }
-        else if (session.getAccessToken() != null) {
+            }
+        } else if (session.getAccessToken() != null) {
             return true;
         }
 
@@ -144,13 +147,12 @@ public class FacebookWrapper {
     }
 
     private void onSessionFailure(Exception ex) {
-        if (mListener == null) {
-            return;
+        if (mListener != null) {
+            // TODO: convert Facebook error message into local error message
+            mListener.failure(new OAError(
+                    OAError.ErrorCode.OA_ERROR_AUTH_FAIL,
+                    (ex != null) ? ex.getMessage() : null));
         }
-        // TODO: convert Facebook error message into local error message
-        mListener.failure(new OAError(
-                OAError.ErrorCode.OA_ERROR_AUTH_FAIL,
-                (ex != null) ? ex.getMessage() : null));
     }
 
     private void storeFacebookAppId(String appId, Activity activity) {
@@ -202,9 +204,10 @@ public class FacebookWrapper {
     public void onResume() {
         if (uiHelper != null) {
             Session session = Session.getActiveSession();
-            if (session != null &&
-                    (session.isOpened() || session.isClosed()) ) {
-                onSessionStateChange(session, session.getState(), null);
+            if (session != null) {
+                if(session.isOpened() || session.isClosed()) {
+                    onSessionStateChange(session, session.getState(), null);
+                }
             }
             uiHelper.onResume();
         }

@@ -1,9 +1,9 @@
 package com.oneall.oneallsdk;
 
+import com.logentries.android.AndroidLogger;
+
 import android.content.Context;
 import android.util.Log;
-
-import com.logentries.android.AndroidLogger;
 
 /**
  * Wrapper class for error logger, able to handle multiple types of logs: LogEntries, regular

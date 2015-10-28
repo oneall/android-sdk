@@ -11,12 +11,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 22
+    buildToolsVersion "23.0.1"
     defaultConfig {
         applicationId "com.oneall.oneallsample"
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 22
         versionName '1.1'
         versionCode 1
     }

@@ -1,5 +1,6 @@
 package com.oneall.oneallsdk;
 
+import com.oneall.oneallsdk.OAError.ErrorCode;
 import com.oneall.oneallsdk.rest.ServiceCallback;
 import com.oneall.oneallsdk.rest.ServiceManagerProvider;
 import com.oneall.oneallsdk.rest.models.NativeLoginRequest;
@@ -11,8 +12,8 @@ import com.oneall.oneallsdk.rest.models.User;
 import com.oneall.oneallsdk.rest.service.ConnectionService;
 import com.oneall.oneallsdk.rest.service.MessagePostService;
 import com.oneall.oneallsdk.rest.service.UserService;
-import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterCore;
 
 import android.app.Activity;
 import android.app.FragmentManager;
@@ -21,9 +22,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import io.fabric.sdk.android.Fabric;
@@ -53,6 +57,7 @@ public class OAManager {
     }
 
     public interface OAManagerPostHandler {
+
         void postComplete(Boolean success, PostMessageResponse response);
     }
 
@@ -153,8 +158,19 @@ public class OAManager {
 
         OALog.init(mAppContext);
 
-        TwitterAuthConfig authConfig = new TwitterAuthConfig(twitterConsumerKey, twitterSecret);
-        Fabric.with(this.mAppContext, new Twitter(authConfig));
+        // if the parent app already initialized Fabric for some of its other modules
+        // make sure it includes the required TwitterCore. Otherwise, init it ourselves
+        if (!Fabric.isInitialized()) {
+            TwitterAuthConfig authConfig = new TwitterAuthConfig(twitterConsumerKey, twitterSecret);
+            Fabric.with(this.mAppContext, new TwitterCore(authConfig));
+        } else {
+            if (Fabric.getKit(TwitterCore.class) == null) {
+                OALog.error("Twitter's Fabric is already initialized but it doesn't include TwitterCore kit which is" +
+                        "required for Auth calls");
+            } else {
+                OALog.warn("Twitter's Fabric was already initialized with a TwitterCore kit. Reusing existing kit");
+            }
+        }
 
         OALog.info(String.format("SDK init with subdomain %s", subdomain));
 
@@ -212,8 +228,9 @@ public class OAManager {
                                         facebookLoginFailure(error);
                                     }
                                 });
+
                 if (!res) {
-                    webLoginWithProvider(activity);
+                    webLoginWithProvider(activity, selectedProvider);
                 }
                 break;
             case "twitter":
@@ -230,7 +247,7 @@ public class OAManager {
                 });
                 break;
             default:
-                webLoginWithProvider(activity);
+                webLoginWithProvider(activity, selectedProvider);
                 break;
         }
 
@@ -434,10 +451,10 @@ public class OAManager {
      *
      * @param userInput user information if required by this provider, can be null
      */
-    private void webLoginWithLoginData(Activity activity, String userInput) {
-        String url = getApiUrlForProvider(selectedProvider, lastNonce, userInput);
+    private void webLoginWithLoginData(Activity activity, Provider provider, String userInput) {
+        String url = getApiUrlForProvider(provider, lastNonce, userInput);
         OALog.info(String.format(
-                "Web login with provider %s and url: %s", selectedProvider.getKey(), url));
+                "Web login with provider %s and url: %s", provider.getKey(), url));
         Intent i = new Intent(activity, WebLoginActivity.class);
         i.putExtra(WebLoginActivity.INTENT_EXTRA_URL, url);
 
@@ -448,10 +465,10 @@ public class OAManager {
      * starts actual web login with selected provider by opening web view with provider relevant
      * URL
      */
-    private void webLoginWithProvider(Activity activity) {
-        OALog.info(String.format("Login with provider %s", selectedProvider));
+    private void webLoginWithProvider(Activity activity, final Provider provider) {
+        OALog.info(String.format("Login with provider %s", provider));
 
-        if (selectedProvider.getAuthentication().getIsUserInputRequired()) {
+        if (provider.getAuthentication().getIsUserInputRequired()) {
             FragmentManager fm = activity.getFragmentManager();
             final UserInputDialog dialog = new UserInputDialog();
             dialog.setListener(new UserInputDialog.DialogListener() {
@@ -460,18 +477,18 @@ public class OAManager {
 
                 @Override
                 public void onAccept(String userInput) {
-                    webLoginWithLoginData(dialog.getActivity(), userInput);
+                    webLoginWithLoginData(dialog.getActivity(), provider, userInput);
                 }
             });
 
             Bundle args = new Bundle();
-            args.putString(UserInputDialog.ARGUMENT_USER_INPUT_TYPE, selectedProvider.getAuthentication().getUserInputType());
-            args.putString(UserInputDialog.ARGUMENT_PROVIDER_NAME, selectedProvider.getName());
+            args.putString(UserInputDialog.ARGUMENT_USER_INPUT_TYPE, provider.getAuthentication().getUserInputType());
+            args.putString(UserInputDialog.ARGUMENT_PROVIDER_NAME, provider.getName());
 
             dialog.setArguments(args);
             dialog.show(fm, "user_input_dialog");
         } else {
-            webLoginWithLoginData(activity, null);
+            webLoginWithLoginData(activity, provider, null);
         }
     }
 
@@ -560,38 +577,52 @@ public class OAManager {
     private void retrieveConnectionInfo(
             Context guiContext, String platform, String accessToken, String secret) {
 
-        final ProgressDialog pd = ProgressDialog.show(
-                guiContext,
-                guiContext.getString(R.string.reading_user_info_title),
-                guiContext.getString(R.string.reading_user_info_message));
-        UserService service = ServiceManagerProvider.getInstance().getUserService();
-        NativeLoginRequest request = new NativeLoginRequest(platform, accessToken, secret);
+        try {
+            final ProgressDialog pd = ProgressDialog.show(
+                    guiContext,
+                    guiContext.getString(R.string.reading_user_info_title),
+                    guiContext.getString(R.string.reading_user_info_message),
+                    true,
+                    true);
 
-        service.info(request, new Callback<ResponseConnection>() {
-            @Override
-            public void success(ResponseConnection connection, Response response) {
-                // dismiss the dialog: since we created it with an app context
-                // we must explicitly request it to destroy itself
-                pd.dismiss();
+            UserService service = ServiceManagerProvider.getInstance().getUserService();
+            NativeLoginRequest request = new NativeLoginRequest(platform, accessToken, secret);
 
-                if (loginHandler != null) {
-                    loginHandler.loginSuccess(connection.data.user, false);
-                    loginHandler = null;
+            service.info(request, new Callback<ResponseConnection>() {
+                @Override
+                public void success(ResponseConnection connection, Response response) {
+                    // dismiss the dialog: since we created it with an app context
+                    // we must explicitly request it to destroy itself
+                    pd.dismiss();
+
+                    if (loginHandler != null) {
+                        loginHandler.loginSuccess(connection.data.user, false);
+                        loginHandler = null;
+                    }
                 }
-            }
 
-            @Override
-            public void failure(RetrofitError error) {
-                pd.dismiss();
+                @Override
+                public void failure(RetrofitError error) {
+                    pd.dismiss();
 
-                if (loginHandler != null) {
-                    loginHandler.loginFailure(new OAError(
-                            OAError.ErrorCode.OA_ERROR_CONNECTION_ERROR,
-                            mAppContext.getResources().getString(R.string.connection_failure)));
-                    loginHandler = null;
+                    if (loginHandler != null) {
+                        loginHandler.loginFailure(new OAError(
+                                OAError.ErrorCode.OA_ERROR_CONNECTION_ERROR,
+                                mAppContext.getResources().getString(R.string.connection_failure)));
+                        loginHandler = null;
+                    }
                 }
+            });
+        } catch (WindowManager.BadTokenException e) {
+            // the user backed out of the calling activity so we failed to show the loading view
+            // notify the handler of a generic connection failure either way
+            if (loginHandler != null) {
+                loginHandler.loginFailure(new OAError(
+                        ErrorCode.OA_ERROR_CONNECTION_ERROR,
+                        mAppContext.getResources().getString(R.string.connection_failure)));
+                loginHandler = null;
             }
-        });
+        }
     }
 
     /** validate initialization state, throws an exception if the manager is not initialized */
@@ -630,22 +661,28 @@ public class OAManager {
      * should be called by the using activity to process onActivityResult signal
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        /* on cancelled login, nothing to do here */
-        if (resultCode == Activity.RESULT_CANCELED ||
-            resultCode == WebLoginActivity.RESULT_FAILED) {
-
-            if (loginHandler != null) {
-                loginHandler.loginFailure(new OAError(OAError.ErrorCode.OA_ERROR_CANCELLED, null));
-                loginHandler = null;
-            }
-        } else if (requestCode == INTENT_REQUEST_CODE_SELECT_ACTIVITY) {
-            loginOnResumeProvider = data.getExtras().getString(ProviderSelectActivity.INTENT_EXTRA_PROVIDER);
-            loginOnResume = true;
-        } else if (requestCode == INTENT_REQUEST_CODE_LOGIN) {
-            webLoginComplete(data);
-        } else {
-            FacebookWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
-            TwitterWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
+        switch (resultCode) {
+            case Activity.RESULT_OK:
+                if (requestCode == INTENT_REQUEST_CODE_SELECT_ACTIVITY) {
+                    loginOnResumeProvider = data.getExtras().getString(ProviderSelectActivity.INTENT_EXTRA_PROVIDER);
+                    loginOnResume = true;
+                } else if (requestCode == INTENT_REQUEST_CODE_LOGIN) {
+                    webLoginComplete(data);
+                } else {
+                    FacebookWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
+                    TwitterWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
+                }
+                break;
+            case Activity.RESULT_CANCELED:
+                // let the native sdk's handle the result cancelled ev
+                FacebookWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
+                TwitterWrapper.getInstance().onActivityResult(requestCode, resultCode, data);
+                /* fall through */
+            case WebLoginActivity.RESULT_FAILED:
+                if (loginHandler != null) {
+                    loginHandler.loginFailure(new OAError(OAError.ErrorCode.OA_ERROR_CANCELLED, null));
+                    loginHandler = null;
+                }
         }
     }
 

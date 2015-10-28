@@ -17,7 +17,7 @@ public class TwitterWrapper {
     // region Helper classes and interfaces
 
     /**
-     * interface used for callbacks to the calling applicatoin
+     * interface used for callbacks to the calling application
      */
     public interface LoginComplete {
         void success(String accessToken, String secret);

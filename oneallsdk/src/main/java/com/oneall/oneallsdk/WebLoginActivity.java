@@ -1,24 +1,29 @@
 package com.oneall.oneallsdk;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 /**
  * Web view activity used to take the user through authentication
  */
-public class WebLoginActivity extends ActionBarActivity {
+public class WebLoginActivity extends AppCompatActivity {
 
     // region Properties
 
     private ProgressDialog progressDialog;
 
+    private WebView mWebView;
     // endregion
 
     // region Constants
@@ -27,7 +32,7 @@ public class WebLoginActivity extends ActionBarActivity {
 
     private final static String CUSTOM_URL_SCHEME = "oneall";
 
-    public final static Integer RESULT_FAILED = 0x80;
+    public final static int RESULT_FAILED = 0x80;
 
     // endregion
 
@@ -36,11 +41,14 @@ public class WebLoginActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_login);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        final ActionBar supportActionBar = getSupportActionBar();
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
-        WebView webView = (WebView) findViewById(R.id.web_login_web_view);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.setWebViewClient(new WebViewClient() {
+        mWebView = (WebView) findViewById(R.id.web_login_web_view);
+        mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.setWebViewClient(new WebViewClient() {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -49,12 +57,24 @@ public class WebLoginActivity extends ActionBarActivity {
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                OALog.info(String.format("Page loading state: %s", url));
-                if (progressDialog == null) {
-                    progressDialog = ProgressDialog.show(
-                            WebLoginActivity.this,
-                            "",
-                            getResources().getString(R.string.web_login_progress_title));
+                OALog.info(String.format("Page loading started: %s", url));
+                try {
+                    if (progressDialog == null) {
+                        progressDialog = ProgressDialog.show(
+                                WebLoginActivity.this,
+                                "",
+                                getResources().getString(R.string.web_login_progress_title),
+                                true,
+                                true,
+                                new OnCancelListener() {
+                                    @Override
+                                    public void onCancel(DialogInterface dialog) {
+                                        pageLoadFailed(null);
+                                    }
+                                });
+                    }
+                } catch (WindowManager.BadTokenException e) {
+                    //ignore: the user backed out but we still got the onPageStarted event
                 }
 
                 super.onPageStarted(view, url, favicon);
@@ -72,7 +92,7 @@ public class WebLoginActivity extends ActionBarActivity {
                 pageLoadFailed(failingUrl);
             }
         });
-        webView.loadUrl(getIntent().getExtras().getString(INTENT_EXTRA_URL));
+        mWebView.loadUrl(getIntent().getExtras().getString(INTENT_EXTRA_URL));
     }
 
     @Override
@@ -80,6 +100,11 @@ public class WebLoginActivity extends ActionBarActivity {
         if (progressDialog != null) {
             // avoid leaking the progress window
             progressDialog.dismiss();
+        }
+
+        if (mWebView != null) {
+            mWebView.stopLoading();
+            mWebView.destroy();
         }
 
         super.onDestroy();
