@@ -29,7 +29,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.facebook.android:facebook-android-sdk:3.23.0'
-    compile('com.twitter.sdk.android:twitter-core:1.4.1@aar') {
+    compile('com.twitter.sdk.android:twitter-core:1.6.0@aar') {
         transitive = true;
     }
 }
