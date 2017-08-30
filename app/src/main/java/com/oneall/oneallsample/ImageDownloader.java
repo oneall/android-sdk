@@ -2,31 +2,24 @@ package com.oneall.oneallsample;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.BufferedHttpEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 import java.io.InputStream;
-import java.net.URI;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Download image in background and put downloaded image into ImageView
  */
-public class ImageDownloader extends AsyncTask<String, Void, Bitmap> {
+class ImageDownloader extends AsyncTask<String, Void, Bitmap> {
 
     private final static String TAG = ImageDownloader.class.toString();
 
-    ImageView bmImage;
+    private ImageView bmImage;
 
-    public ImageDownloader(ImageView bmImage) {
+    ImageDownloader(ImageView bmImage) {
         this.bmImage = bmImage;
     }
 
@@ -36,18 +29,27 @@ public class ImageDownloader extends AsyncTask<String, Void, Bitmap> {
 
         Log.i(TAG, String.format("Downloading image from %s", urldisplay));
 
+        HttpURLConnection conn = null;
         try {
-            HttpGet httpRequest = new HttpGet(URI.create(urldisplay));
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response = httpclient.execute(httpRequest);
-            HttpEntity entity = response.getEntity();
-            BufferedHttpEntity bufHttpEntity = new BufferedHttpEntity(entity);
-            mIcon11 = BitmapFactory.decodeStream(bufHttpEntity.getContent());
-            httpRequest.abort();
+            URL url = new URL(urldisplay);
+            conn = (HttpURLConnection) url.openConnection();
+            if (conn.getResponseCode() == 200) {
+                InputStream is = conn.getInputStream();
+                mIcon11 = BitmapFactory.decodeStream(is);
+
+                Log.i(TAG, String.format("Image downloaded from %s", urldisplay));
+            } else {
+                Log.i(TAG, String.format("Failed to download image from %s with status code %d",
+                        urldisplay, conn.getResponseCode()));
+            }
 
             Log.i(TAG, String.format("Image downloaded from %s", urldisplay));
         } catch (Exception e) {
-            Log.e("Error", e.getMessage());
+            Log.e(TAG, e.getMessage());
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
         return mIcon11;
     }
