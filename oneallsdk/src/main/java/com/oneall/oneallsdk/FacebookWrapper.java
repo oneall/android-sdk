@@ -1,33 +1,25 @@
 package com.oneall.oneallsdk;
 
-import com.facebook.Session;
-import com.facebook.SessionState;
-import com.facebook.UiLifecycleHelper;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /** This class wraps interface to Facebook and hides implementation details */
-public class FacebookWrapper {
+class FacebookWrapper {
     // region Helper classes and interfaces
 
-    /**
-     * handler responsible for Facebook status changes
-     */
-    private class SessionStatusCallback implements Session.StatusCallback {
-
-        @Override
-        public void call(Session session, SessionState state, Exception exception) {
-            onSessionStateChange(session, state, exception);
-        }
-    }
-
-    public interface SessionStateListener {
+    interface SessionStateListener {
 
         void success(String accessToken);
 
@@ -38,20 +30,19 @@ public class FacebookWrapper {
 
     // region Properties
 
-    private Session.StatusCallback statusCallback = new SessionStatusCallback();
-
-    private SessionStateListener mListener;
-
-    private Session mSession;
-
-    /** Facebook UI Helper */
-    private UiLifecycleHelper uiHelper = null;
+    /** callback manager used to take care of session state changes */
+    @NonNull
+    private CallbackManager callbackManager;
 
     // endregion
 
     // region Lifecycle
 
     private static FacebookWrapper mInstance = null;
+
+    private FacebookWrapper() {
+        this.callbackManager = CallbackManager.Factory.create();
+    }
 
     public static FacebookWrapper getInstance() {
         if (mInstance == null) {
@@ -64,96 +55,40 @@ public class FacebookWrapper {
         return mInstance;
     }
 
-    public static void destroyInstance() {
-        synchronized (FacebookWrapper.class) {
-            if (mInstance != null) {
-                mInstance.onDestroy();
-                mInstance = null;
-            }
-        }
-    }
-
     // endregion
 
     // region Interface methods
 
-    public boolean login(Activity activity, SessionStateListener listener) {
-        mListener = listener;
-        Session session = Session.getActiveSession();
-        if (session != null) {
-            if (!session.isOpened() && !session.isClosed()) {
-                session.openForRead(new Session.OpenRequest(activity)
-                        .setPermissions(Arrays.asList("public_profile"))
-                        .setCallback(statusCallback));
-            } else {
-                Session.openActiveSession(activity, true, statusCallback);
-            }
-            return true;
-        } else {
-            return false;
-        }
+    void login(@NonNull Activity activity, @NonNull final SessionStateListener listener) {
+        LoginManager.getInstance().registerCallback(
+                callbackManager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+                        listener.success(loginResult.getAccessToken().getToken());
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        listener.failure(
+                                new OAError(OAError.ErrorCode.OA_ERROR_CANCELLED, "Cancelled"));
+                    }
+
+                    @Override
+                    public void onError(FacebookException error) {
+                        listener.failure(new OAError(
+                                OAError.ErrorCode.OA_ERROR_AUTH_FAIL, error.getMessage()));
+                    }
+                });
+
+        LoginManager
+                .getInstance()
+                .logInWithReadPermissions(activity, Collections.singletonList("public_profile"));
     }
 
     // endregion
 
     // region Utilities
-
-    private void onSessionStateChange(Session session, SessionState sessionState, Exception ex) {
-        OALog.info(String.format("Facebook login session change. New state: %s", sessionState));
-
-        switch (sessionState) {
-            case OPENED:
-            case OPENED_TOKEN_UPDATED:
-                if (isSessionChanged(session)) {
-                    mSession = session;
-                    onSessionSuccess(session);
-                }
-                break;
-            case CLOSED_LOGIN_FAILED:
-                onSessionFailure(ex);
-                break;
-        }
-    }
-
-    private boolean isSessionChanged(Session session) {
-
-        /* check if this is first activation */
-        if (mSession == null) {
-            return true;
-        }
-
-        // Check if session state changed
-        if (mSession.getState() != session.getState()) {
-            return true;
-        }
-
-        // Check if accessToken changed
-        if (mSession.getAccessToken() != null) {
-            if (!mSession.getAccessToken().equals(session.getAccessToken())) {
-                return true;
-            }
-        } else if (session.getAccessToken() != null) {
-            return true;
-        }
-
-        // Nothing changed
-        return false;
-    }
-
-    private void onSessionSuccess(Session session) {
-        if (mListener != null) {
-            mListener.success(session.getAccessToken());
-        }
-    }
-
-    private void onSessionFailure(Exception ex) {
-        if (mListener != null) {
-            // TODO: convert Facebook error message into local error message
-            mListener.failure(new OAError(
-                    OAError.ErrorCode.OA_ERROR_AUTH_FAIL,
-                    (ex != null) ? ex.getMessage() : null));
-        }
-    }
 
     private void storeFacebookAppId(String appId, Activity activity) {
         try {
@@ -172,45 +107,8 @@ public class FacebookWrapper {
 
     // region Activity lifecycle responders
 
-    public void onCreate(Activity activity, Bundle savedInstanceState) {
-        uiHelper = new UiLifecycleHelper(activity, statusCallback);
-        uiHelper.onCreate(savedInstanceState);
-    }
-
-    public void onDestroy() {
-        if (uiHelper != null) {
-            uiHelper.onDestroy();
-        }
-    }
-
-    public void onSaveInstanceState(Bundle outState) {
-        if (uiHelper != null) {
-            uiHelper.onSaveInstanceState(outState);
-        }
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (uiHelper != null) {
-            uiHelper.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    public void onPause() {
-        if (uiHelper != null) {
-            uiHelper.onPause();
-        }
-    }
-
-    public void onResume() {
-        if (uiHelper != null) {
-            Session session = Session.getActiveSession();
-            if (session != null) {
-                if(session.isOpened() || session.isClosed()) {
-                    onSessionStateChange(session, session.getState(), null);
-                }
-            }
-            uiHelper.onResume();
-        }
+    void onActivityResult(int requestCode, int resultCode, Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     // endregion

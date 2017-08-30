@@ -22,12 +22,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 import io.fabric.sdk.android.Fabric;
@@ -83,9 +81,6 @@ public class OAManager {
     /** key of the provider selected */
     private String loginOnResumeProvider;
 
-    /** currently selected provider */
-    private Provider selectedProvider;
-
     // endregion
 
     // region Lifecycle
@@ -114,7 +109,6 @@ public class OAManager {
         synchronized (OAManager.class) {
             if (mInstance != null) {
                 // clean up
-                FacebookWrapper.destroyInstance();
                 TwitterWrapper.destroyInstance();
                 // allow instance to be GCed
                 mInstance = null;
@@ -204,7 +198,9 @@ public class OAManager {
         validateInitialization();
 
         loginHandler = handler;
-        selectedProvider = ProviderManager.getInstance().findByKey(provider);
+
+        /* currently selected provider */
+        Provider selectedProvider = ProviderManager.getInstance().findByKey(provider);
 
         if (selectedProvider == null) {
             throw new IllegalArgumentException("Specified provider does not exist");
@@ -214,24 +210,20 @@ public class OAManager {
 
         switch (provider) {
             case "facebook":
-                boolean res =
-                        FacebookWrapper.getInstance().login(
-                                activity,
-                                new FacebookWrapper.SessionStateListener() {
-                                    @Override
-                                    public void success(String accessToken) {
-                                        facebookLoginSuccess(activity, accessToken);
-                                    }
+                FacebookWrapper.getInstance().login(
+                        activity,
+                        new FacebookWrapper.SessionStateListener() {
+                            @Override
+                            public void success(String accessToken) {
+                                facebookLoginSuccess(activity, accessToken);
+                            }
 
-                                    @Override
-                                    public void failure(OAError error) {
-                                        facebookLoginFailure(error);
-                                    }
-                                });
+                            @Override
+                            public void failure(OAError error) {
+                                facebookLoginFailure(error);
+                            }
+                        });
 
-                if (!res) {
-                    webLoginWithProvider(activity, selectedProvider);
-                }
                 break;
             case "twitter":
                 TwitterWrapper.getInstance().login(activity, new TwitterWrapper.LoginComplete() {
@@ -639,22 +631,20 @@ public class OAManager {
     /**
      * should be called by the using activity to process onCreate signal
      */
+    @SuppressWarnings("UnusedParameters")
     public void onCreate(Activity activity, Bundle savedInstanceState) {
-        FacebookWrapper.getInstance().onCreate(activity, savedInstanceState);
     }
 
     /**
      * should be called by the using activity to process onResume signal
      */
     public void onResume() {
-        FacebookWrapper.getInstance().onResume();
     }
 
     /**
      * should be called by the using activity to process onPause signal
      */
     public void onPause() {
-        FacebookWrapper.getInstance().onPause();
     }
 
     /**
@@ -689,15 +679,14 @@ public class OAManager {
     /**
      * should be called by the using activity to process onSaveInstanceState signal
      */
+    @SuppressWarnings("UnusedParameters")
     public void onSaveInstanceState(Bundle outState) {
-        FacebookWrapper.getInstance().onSaveInstanceState(outState);
     }
 
     /**
      * should be called by the using activity to process onDestroy signal
      */
     public void onDestroy() {
-        FacebookWrapper.getInstance().onDestroy();
     }
 
     // endregion
