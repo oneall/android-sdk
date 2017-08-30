@@ -1,5 +1,7 @@
 package com.oneall.oneallsdk;
 
+import android.support.annotation.NonNull;
+
 /**
  * Common error type returned by the manager and passing message between modules
  */
@@ -23,10 +25,10 @@ public class OAError {
     }
 
     /** detailed human readable message */
-    private String message;
+    @NonNull private String message;
 
     /** error code */
-    private ErrorCode code;
+    @NonNull private ErrorCode code;
 
     /**
      * default constructor
@@ -36,7 +38,7 @@ public class OAError {
      * @param message human readable message
      */
 
-    public OAError(ErrorCode code, String message) {
+    public OAError(@NonNull ErrorCode code, @NonNull String message) {
         this.message = message;
         this.code = code;
     }
@@ -46,7 +48,7 @@ public class OAError {
      *
      * @return a message
      */
-    public String getMessage() {
+    @NonNull public String getMessage() {
         return message;
     }
 
@@ -55,7 +57,7 @@ public class OAError {
      *
      * @return an error code
      */
-    public ErrorCode getCode() {
+    @NonNull public ErrorCode getCode() {
         return code;
     }
 }
