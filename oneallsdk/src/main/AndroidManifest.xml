@@ -13,6 +13,7 @@
         </activity>
         <activity
             android:name=".WebLoginActivity"
+            android:exported="true"
             android:label="@string/title_activity_web_login" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
